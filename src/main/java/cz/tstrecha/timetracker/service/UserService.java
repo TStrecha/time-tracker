@@ -1,0 +1,101 @@
+package cz.tstrecha.timetracker.service;
+
+import cz.tstrecha.timetracker.constant.AccountType;
+import cz.tstrecha.timetracker.constant.UserRole;
+import cz.tstrecha.timetracker.dto.LoginRequestDTO;
+import cz.tstrecha.timetracker.dto.LoginResponseDTO;
+import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
+import cz.tstrecha.timetracker.dto.RelationshipDTO;
+import cz.tstrecha.timetracker.dto.UserDTO;
+import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
+import cz.tstrecha.timetracker.dto.mapper.UserMapper;
+import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
+import cz.tstrecha.timetracker.repository.UserRepository;
+import cz.tstrecha.timetracker.repository.UserSettingsRepository;
+import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
+import cz.tstrecha.timetracker.repository.entity.UserSettingsEntity;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final UserRelationshipRepository userRelationshipRepository;
+    private final UserSettingsRepository userSettingsRepository;
+
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final AuthenticationService authenticationService;
+
+    private final UserMapper userMapper;
+    private final RelationshipMapper relationshipMapper;
+
+    @Transactional
+    public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role){
+        if(registrationRequest.getAccountType() == AccountType.PERSON){
+            if(Strings.isEmpty(registrationRequest.getFirstName()) || Strings.isEmpty(registrationRequest.getLastName())){
+                throw new IllegalArgumentException("Person has to have first name and last name filled in.");
+            }
+        } else if(registrationRequest.getAccountType() == AccountType.COMPANY){
+            if(Strings.isEmpty(registrationRequest.getCompanyName())){
+                throw new IllegalArgumentException("Company has to have company name filled in.");
+            }
+        }
+
+        if(userRepository.existsByEmail(registrationRequest.getEmail())){
+            throw new IllegalArgumentException("User with this email already exists.");
+        }
+
+        var passwordHashed = passwordEncoder.encode(registrationRequest.getPassword());
+        var registeredUser = userMapper.fromRegistrationRequest(registrationRequest, passwordHashed, role);
+
+        var ownRelation = new UserRelationshipEntity();
+        ownRelation.setPermissions(List.of("*"));
+        ownRelation.setFrom(registeredUser);
+        ownRelation.setTo(registeredUser);
+        ownRelation.setSecureValues(false);
+
+        registeredUser.setUserRelationshipGiving(List.of(ownRelation));
+        registeredUser.setUserRelationshipReceiving(List.of(ownRelation));
+
+        var settings = new UserSettingsEntity();
+        settings.setUser(registeredUser);
+        registeredUser.setSettings(List.of(settings));
+
+        var savedUser = userRepository.save(registeredUser);
+        userRelationshipRepository.save(ownRelation);
+        userSettingsRepository.save(settings);
+
+        return userMapper.toDTO(savedUser);
+    }
+
+    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request){
+        var from = userRepository.findById(request.getFromId())
+                .orElseThrow(() -> new EntityNotFoundException("User entity not found by from id [" + request.getFromId() + "]"));
+        var to = userRepository.findById(request.getToId())
+                .orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + request.getToId() + "]"));
+
+        var relation = relationshipMapper.fromRequest(request, from, to);
+        relation = userRelationshipRepository.save(relation);
+        return relationshipMapper.toDTOFromReceiving(relation);
+    }
+
+    public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
+        var token = authenticationService.generateToken(user, null);
+        return new LoginResponseDTO(true, null, token, null);
+    }
+}
