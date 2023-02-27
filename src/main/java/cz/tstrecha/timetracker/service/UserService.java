@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.service;
 
+import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
@@ -100,6 +101,6 @@ public class UserService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
         var token = authenticationService.generateToken(user, null);
-        return new LoginResponseDTO(true, token, null);
+        return new LoginResponseDTO(true, JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX+token, null);
     }
 }

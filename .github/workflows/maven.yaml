@@ -43,3 +43,7 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: mvn -B package --file pom.xml
+      - name: Test - Unit
+        run: mvn test -Dtest=!*IT
+      - name: Test - Integration
+        run: mvn test -Dtest=*IT,TimeTrackerApplicationTest
