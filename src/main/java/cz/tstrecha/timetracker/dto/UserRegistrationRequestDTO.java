@@ -22,7 +22,7 @@ public class UserRegistrationRequestDTO {
     private String companyName;
 
     @NotNull
-    @Size(min = 6)
+    @Size(min = 8)
     private String password;
 
     @NotNull

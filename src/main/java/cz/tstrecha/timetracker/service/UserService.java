@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +57,9 @@ public class UserService {
 
         if(userRepository.existsByEmail(registrationRequest.getEmail())){
             throw new IllegalArgumentException("User with this email already exists.");
+        }
+        if(IntStream.of(0, registrationRequest.getPassword().length() - 1).noneMatch(i -> Character.isDigit(registrationRequest.getPassword().charAt(i)))){
+            throw new IllegalArgumentException("Password should contain at least 1 digit.");
         }
 
         var passwordHashed = passwordEncoder.encode(registrationRequest.getPassword());
@@ -96,6 +100,6 @@ public class UserService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
         var token = authenticationService.generateToken(user, null);
-        return new LoginResponseDTO(true, null, token, null);
+        return new LoginResponseDTO(true, token, null);
     }
 }

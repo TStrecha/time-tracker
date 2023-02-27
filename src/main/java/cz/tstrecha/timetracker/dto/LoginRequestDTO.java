@@ -13,7 +13,7 @@ public class LoginRequestDTO {
 
     @Email
     private String email;
-    @Length(min = 6)
+    @Length(min = 8)
     private String password;
 
 }

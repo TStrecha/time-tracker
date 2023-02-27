@@ -22,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private static final String USER_CONTEXT_CLAIM_KEY = "user_detail";
+    private static final String USER_CONTEXT_CLAIM_KEY = "user";
 
     private final UserMapper userMapper;
     private final ObjectMapper objectMapper;

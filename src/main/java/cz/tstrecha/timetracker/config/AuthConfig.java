@@ -35,7 +35,7 @@ public class AuthConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return email ->
-            userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("No user exists for email "+email));
+            userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("No user exists for email ["+email+"]"));
     }
 
     @Bean

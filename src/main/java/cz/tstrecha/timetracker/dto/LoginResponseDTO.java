@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public class LoginResponseDTO {
 
     private boolean success;
-    private String error;
     private String authToken;
     private String refreshToken = null; // Not yet implemented
 }
