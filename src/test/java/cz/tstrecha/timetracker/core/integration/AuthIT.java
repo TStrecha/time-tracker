@@ -36,6 +36,7 @@ public class AuthIT extends IntegrationTest {
     private final static String USER_PASSWORD = "testcase1";
     private final static String USER_FIRST_NAME = "Test";
     private final static String USER_LAST_NAME = "Case1";
+    private final static String COMPANY_NAME = "Time Tracker s.r.o.";
 
     @Autowired
     private UserMapper userMapper;
@@ -113,7 +114,7 @@ public class AuthIT extends IntegrationTest {
     @SneakyThrows
     @Transactional
     public void test03_loginUser_success() {
-        var token = registerUserAndGetToken();
+        var token = registerUserAndGetToken(createUserRequest());
         String[] chunks = token.replace(JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX, "").split("\\.");
         Base64.Decoder decoder = Base64.getUrlDecoder();
 
@@ -148,7 +149,7 @@ public class AuthIT extends IntegrationTest {
     @SneakyThrows
     @Transactional
     public void test05_getLoggedUserDetails_success() {
-        var token = registerUserAndGetToken();
+        var token = registerUserAndGetToken(createUserRequest());
 
         var response = mvc.perform(get("/time-tracker/v1/user/me")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -216,6 +217,26 @@ public class AuthIT extends IntegrationTest {
         Assertions.assertEquals("Password should contain at least 1 digit.", exception.getMessage());
     }
 
+    @Test
+    @SneakyThrows
+    @Transactional
+    public void test10_registerUser_success_companyAccount() {
+        var request = createUserRequest();
+        request.setAccountType(AccountType.COMPANY);
+        request.setCompanyName(COMPANY_NAME);
+        request.setLastName(null);
+        request.setFirstName(null);
+
+        var token = registerUserAndGetToken(request);
+        var response = mvc.perform(get("/time-tracker/v1/user/me")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, token))
+                .andReturn()
+                .getResponse();
+        var responseUser = objectMapper.readValue(response.getContentAsString(), UserContext.class);
+        Assertions.assertEquals(COMPANY_NAME, responseUser.getName());
+    }
+
     private UserRegistrationRequestDTO createUserRequest(){
         var request = new UserRegistrationRequestDTO();
         request.setEmail(USER_EMAIL);
@@ -226,8 +247,7 @@ public class AuthIT extends IntegrationTest {
         return request;
     }
 
-    private String registerUserAndGetToken() throws Exception {
-        var registrationRequest = createUserRequest();
+    private String registerUserAndGetToken(UserRegistrationRequestDTO registrationRequest) throws Exception {
         mvc.perform(post("/time-tracker/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(registrationRequest)))
