@@ -4,12 +4,15 @@ import cz.tstrecha.timetracker.IntegrationTest;
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.SecretMode;
+import cz.tstrecha.timetracker.constant.UserRole;
+import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
+import cz.tstrecha.timetracker.service.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -36,6 +39,9 @@ public class AuthIT extends IntegrationTest {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private UserService userService;
 
     @Test
     @SneakyThrows
@@ -155,6 +161,59 @@ public class AuthIT extends IntegrationTest {
         Assertions.assertNotNull(responseUser);
         Assertions.assertNotNull(responseUser.getId());
         Assertions.assertEquals(responseUser.getId(), responseUser.getLoggedAs().getId());
+    }
+
+    @Test
+    @SneakyThrows
+    @Transactional
+    public void test06_registerUser_fail_emailAlreadyExists() {
+        var request = createUserRequest();
+        userService.createUser(request, UserRole.USER);
+
+        var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals("User with this email already exists.", exception.getMessage());
+    }
+
+    @Test
+    @SneakyThrows
+    @Transactional
+    public void test07_registerUser_fail_companyNameNotPresentForCompanyAccount() {
+        var request = createUserRequest();
+        request.setAccountType(AccountType.COMPANY);
+
+        var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals("Company has to have company name filled in.", exception.getMessage());
+    }
+
+    @Test
+    @SneakyThrows
+    @Transactional
+    public void test08_registerUser_fail_namesNotPresentForUserAccount() {
+        var request = createUserRequest();
+        request.setFirstName(null);
+        request.setLastName(null);
+
+        var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals("Person has to have first name and last name filled in.", exception.getMessage());
+
+        request.setFirstName("Test");
+        exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals("Person has to have first name and last name filled in.", exception.getMessage());
+
+        request.setFirstName(null);
+        request.setLastName("");
+        exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals("Person has to have first name and last name filled in.", exception.getMessage());
+    }
+    @Test
+    @SneakyThrows
+    @Transactional
+    public void test09_registerUser_fail_passwordDoesntContainDigit() {
+        var request = createUserRequest();
+        request.setPassword("test");
+
+        var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals("Password should contain at least 1 digit.", exception.getMessage());
     }
 
     private UserRegistrationRequestDTO createUserRequest(){

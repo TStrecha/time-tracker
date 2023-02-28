@@ -8,16 +8,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
-@ActiveProfiles("test")
+import java.util.Arrays;
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-public class IntegrationTest {
+public abstract class IntegrationTest {
+
+    private static final String TEST_PROFILE = "testprod";
+    private static final String TEST_LOCAL_PROFILE = "testlocal";
 
     @Autowired
     protected MockMvc mvc;
@@ -35,9 +39,15 @@ public class IntegrationTest {
     @Autowired
     protected UserRepository userRepository;
 
+    @Autowired
+    private ConfigurableEnvironment env;
+
     @BeforeEach
     public void init(){
         cleanUpDB();
+        if(!Arrays.asList(env.getActiveProfiles()).contains(TEST_PROFILE)){
+            env.setActiveProfiles(TEST_LOCAL_PROFILE);
+        }
     }
 
     protected void cleanUpDB() {

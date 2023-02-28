@@ -25,7 +25,10 @@ public class UserContextParameterResolver implements HandlerMethodArgumentResolv
                     "Type found [" + parameter.getParameterType() + "]");
         }
         var annotation = parameter.getParameterAnnotation(InjectUserContext.class);
-        if(annotation.required()){
+        if(annotation == null){
+            return null;
+        }
+        if(annotation.required()) {
             return ContextUtils.retrieveContextMandatory();
         }
         return ContextUtils.retrieveContext().orElse(null);

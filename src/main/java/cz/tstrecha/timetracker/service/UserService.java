@@ -3,6 +3,7 @@ package cz.tstrecha.timetracker.service;
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
+import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
@@ -48,19 +49,19 @@ public class UserService {
     public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role){
         if(registrationRequest.getAccountType() == AccountType.PERSON){
             if(Strings.isEmpty(registrationRequest.getFirstName()) || Strings.isEmpty(registrationRequest.getLastName())){
-                throw new IllegalArgumentException("Person has to have first name and last name filled in.");
+                throw new UserInputException("Person has to have first name and last name filled in.");
             }
         } else if(registrationRequest.getAccountType() == AccountType.COMPANY){
             if(Strings.isEmpty(registrationRequest.getCompanyName())){
-                throw new IllegalArgumentException("Company has to have company name filled in.");
+                throw new UserInputException("Company has to have company name filled in.");
             }
         }
 
         if(userRepository.existsByEmail(registrationRequest.getEmail())){
-            throw new IllegalArgumentException("User with this email already exists.");
+            throw new UserInputException("User with this email already exists.");
         }
         if(IntStream.of(0, registrationRequest.getPassword().length() - 1).noneMatch(i -> Character.isDigit(registrationRequest.getPassword().charAt(i)))){
-            throw new IllegalArgumentException("Password should contain at least 1 digit.");
+            throw new UserInputException("Password should contain at least 1 digit.");
         }
 
         var passwordHashed = passwordEncoder.encode(registrationRequest.getPassword());
