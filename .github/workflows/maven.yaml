@@ -47,4 +47,4 @@ jobs:
       - name: Test - Unit
         run: mvn test -Dtest=!*IT #This stage should run any integration test, thus won't start spring boot, active profiles are not present
       - name: Test - Integration
-        run: mvn test -Dtest=*IT,TimeTrackerApplicationTest -Dspring.profiles.active=testprod
+        run: mvn test -Dtest=*IT -Dspring.profiles.active=testprod
