@@ -39,7 +39,7 @@ public class SecurityConfig {
                     .permitAll()
                 .requestMatchers("/error")
                     .permitAll()
-                .requestMatchers(Constants.V1_CONTROLLER_ROOT +"auth/**")
+                .requestMatchers(Constants.V1_CONTROLLER_ROOT + "auth/**")
                     .permitAll()
                 .anyRequest()
                     .authenticated()

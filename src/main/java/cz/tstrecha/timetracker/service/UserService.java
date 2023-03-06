@@ -4,6 +4,7 @@ import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.*;
 
 public interface UserService {
+    
     /**
      *
      * @param registrationRequest

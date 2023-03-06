@@ -22,7 +22,6 @@
         <openapi.version>2.0.2</openapi.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <lombok.version>1.18.20</lombok.version>
-        <mapstruct-processor.version>1.5.1.Final</mapstruct-processor.version>
     </properties>
     <dependencies>
         <dependency>
@@ -118,7 +117,7 @@
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct-processor.version}</version>
+                            <version>${mapstruct.version}</version>
                         </path>
 
                     </annotationProcessorPaths>

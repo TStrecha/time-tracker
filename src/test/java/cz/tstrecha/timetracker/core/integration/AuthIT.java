@@ -52,7 +52,7 @@ public class AuthIT extends IntegrationTest {
     public void test01_createUser_success() {
         var request = createUserRequest();
         var apiResult = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT +"auth/register")
+                        post(Constants.V1_CONTROLLER_ROOT + "auth/register")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -95,7 +95,7 @@ public class AuthIT extends IntegrationTest {
     @Transactional
     public void test02_loginUser_failure() {
         var registrationRequest = createUserRequest();
-        mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/register")
+        mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/register")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(registrationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -105,7 +105,7 @@ public class AuthIT extends IntegrationTest {
         var loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(USER_EMAIL);
         loginRequest.setPassword(USER_PASSWORD + "fail");
-        mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/login")
+        mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
@@ -140,7 +140,7 @@ public class AuthIT extends IntegrationTest {
     @SneakyThrows
     @Transactional
     public void test04_getLoggedUserDetails_failure() {
-        mvc.perform(get(Constants.V1_CONTROLLER_ROOT +"user/me")
+        mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user/me")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn()
@@ -153,7 +153,7 @@ public class AuthIT extends IntegrationTest {
     public void test05_getLoggedUserDetails_success() {
         var token = registerUserAndGetToken(createUserRequest());
 
-        var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT +"user")
+        var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, token))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -230,7 +230,7 @@ public class AuthIT extends IntegrationTest {
         request.setFirstName(null);
 
         var token = registerUserAndGetToken(request);
-        var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT +"user")
+        var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, token))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -251,7 +251,7 @@ public class AuthIT extends IntegrationTest {
     }
 
     private String registerUserAndGetToken(UserRegistrationRequestDTO registrationRequest) throws Exception {
-        mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/register")
+        mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/register")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(registrationRequest)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
@@ -261,7 +261,7 @@ public class AuthIT extends IntegrationTest {
         var loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(USER_EMAIL);
         loginRequest.setPassword(USER_PASSWORD);
-        var loginResponse = mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/login")
+        var loginResponse = mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
