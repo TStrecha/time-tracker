@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.config;
 
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class AppConfig {
 
         private Duration tokenDuration;
         private String secretKey;
+        private SignatureAlgorithm signatureAlgorithm;
 
     }
 }

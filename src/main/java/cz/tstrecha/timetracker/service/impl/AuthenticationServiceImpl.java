@@ -45,7 +45,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + appConfig.getAuth().getTokenDuration().toMillis()))
-                .signWith(signInKey, SignatureAlgorithm.HS256)
+                .signWith(signInKey, appConfig.getAuth().getSignatureAlgorithm())
                 .compact();
     }
 
