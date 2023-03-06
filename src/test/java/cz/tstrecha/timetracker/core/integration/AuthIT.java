@@ -3,16 +3,17 @@ package cz.tstrecha.timetracker.core.integration;
 import cz.tstrecha.timetracker.IntegrationTest;
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
+import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.constant.SecretMode;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
-import cz.tstrecha.timetracker.dto.UserDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
-import cz.tstrecha.timetracker.service.UserService;
+import cz.tstrecha.timetracker.repository.UserRepository;
+import cz.tstrecha.timetracker.service.impl.UserServiceImpl;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Base64;
 import java.util.List;
@@ -42,7 +44,7 @@ public class AuthIT extends IntegrationTest {
     private UserMapper userMapper;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @Test
     @SneakyThrows
@@ -50,13 +52,14 @@ public class AuthIT extends IntegrationTest {
     public void test01_createUser_success() {
         var request = createUserRequest();
         var apiResult = mvc.perform(
-                        post("/time-tracker/v1/auth/register")
+                        post(Constants.V1_CONTROLLER_ROOT +"auth/register")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request)))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
                 .getResponse();
-        Assertions.assertEquals(200, apiResult.getStatus());
-        var user = objectMapper.readValue(apiResult.getContentAsString(), UserDTO.class);
+
+        var user = userMapper.toDTO(userRepository.findById(Long.valueOf(apiResult.getContentAsString())).orElseThrow());
 
         Assertions.assertEquals(request.getAccountType(), user.getAccountType());
         Assertions.assertEquals(request.getFirstName(), user.getFirstName());
@@ -92,22 +95,22 @@ public class AuthIT extends IntegrationTest {
     @Transactional
     public void test02_loginUser_failure() {
         var registrationRequest = createUserRequest();
-        mvc.perform(post("/time-tracker/v1/auth/register")
+        mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/register")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(registrationRequest)))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
                 .getResponse();
 
         var loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(USER_EMAIL);
         loginRequest.setPassword(USER_PASSWORD + "fail");
-        var loginResponse = mvc.perform(post("/time-tracker/v1/auth/login")
+        mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn()
                 .getResponse();
-
-        Assertions.assertEquals(403, loginResponse.getStatus());
     }
 
     @Test
@@ -137,12 +140,11 @@ public class AuthIT extends IntegrationTest {
     @SneakyThrows
     @Transactional
     public void test04_getLoggedUserDetails_failure() {
-        var response = mvc.perform(get("/time-tracker/v1/user/me")
+        mvc.perform(get(Constants.V1_CONTROLLER_ROOT +"user/me")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn()
                 .getResponse();
-
-        Assertions.assertEquals(403, response.getStatus());
     }
 
     @Test
@@ -151,13 +153,13 @@ public class AuthIT extends IntegrationTest {
     public void test05_getLoggedUserDetails_success() {
         var token = registerUserAndGetToken(createUserRequest());
 
-        var response = mvc.perform(get("/time-tracker/v1/user/me")
+        var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT +"user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, token))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn()
                 .getResponse();
 
-        Assertions.assertEquals(200, response.getStatus());
         var responseUser = objectMapper.readValue(response.getContentAsString(), UserContext.class);
         Assertions.assertNotNull(responseUser);
         Assertions.assertNotNull(responseUser.getId());
@@ -228,9 +230,10 @@ public class AuthIT extends IntegrationTest {
         request.setFirstName(null);
 
         var token = registerUserAndGetToken(request);
-        var response = mvc.perform(get("/time-tracker/v1/user/me")
+        var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT +"user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, token))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn()
                 .getResponse();
         var responseUser = objectMapper.readValue(response.getContentAsString(), UserContext.class);
@@ -248,21 +251,22 @@ public class AuthIT extends IntegrationTest {
     }
 
     private String registerUserAndGetToken(UserRegistrationRequestDTO registrationRequest) throws Exception {
-        mvc.perform(post("/time-tracker/v1/auth/register")
+        mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/register")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(registrationRequest)))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
                 .getResponse();
 
         var loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(USER_EMAIL);
         loginRequest.setPassword(USER_PASSWORD);
-        var loginResponse = mvc.perform(post("/time-tracker/v1/auth/login")
+        var loginResponse = mvc.perform(post(Constants.V1_CONTROLLER_ROOT +"auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn()
                 .getResponse();
-        Assertions.assertEquals(200, loginResponse.getStatus());
 
         var loginData = objectMapper.readValue(loginResponse.getContentAsString(), LoginResponseDTO.class);
         Assertions.assertTrue(loginData.isSuccess());

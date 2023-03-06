@@ -1,5 +1,6 @@
-package cz.tstrecha.timetracker.service;
+package cz.tstrecha.timetracker.service.impl;
 
+import cz.tstrecha.timetracker.config.AppConfig;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
@@ -22,15 +23,17 @@ import java.util.TimeZone;
 @RequiredArgsConstructor
 public class OnApplicationStartHandler {
 
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
     private final Environment environment;
 
     private final UserRepository userRepository;
 
+    private final AppConfig appConfig;
+
     @EventListener(ApplicationReadyEvent.class)
     public void createUsersWhenEmptyDatabase() {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone(appConfig.getDefaultTimeZone()));
         if(Arrays.stream(environment.getActiveProfiles()).noneMatch(profile -> profile.equals("prod")) && userRepository.count() == 0) {
             log.warn("Creating mock users.");
 

@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.config;
 
+import cz.tstrecha.timetracker.constant.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,7 +39,7 @@ public class SecurityConfig {
                     .permitAll()
                 .requestMatchers("/error")
                     .permitAll()
-                .requestMatchers("/time-tracker/v1/auth/**")
+                .requestMatchers(Constants.V1_CONTROLLER_ROOT +"auth/**")
                     .permitAll()
                 .anyRequest()
                     .authenticated()

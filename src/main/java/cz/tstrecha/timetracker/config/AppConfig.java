@@ -17,6 +17,8 @@ public class AppConfig {
 
     private AuthConfig auth;
 
+    private String defaultTimeZone;
+
     @Data
     public static class AuthConfig {
 
