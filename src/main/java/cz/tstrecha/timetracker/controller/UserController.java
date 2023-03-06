@@ -19,7 +19,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping(value = "/time-tracker/v1/user", produces = {APPLICATION_JSON_VALUE})
 public class UserController {
 
-    @GetMapping("/me")
     public UserContext loggedUserDetails(@InjectUserContext UserContext user){
         return user;
     }
