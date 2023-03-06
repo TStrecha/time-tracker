@@ -17,6 +17,7 @@ import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.UserSettingsRepository;
 import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import cz.tstrecha.timetracker.repository.entity.UserSettingsEntity;
+import cz.tstrecha.timetracker.service.AuthenticationService;
 import cz.tstrecha.timetracker.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -41,7 +42,7 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final AuthenticationServiceImpl authenticationService;
+    private final AuthenticationService authenticationService;
 
     private final UserMapper userMapper;
     private final RelationshipMapper relationshipMapper;

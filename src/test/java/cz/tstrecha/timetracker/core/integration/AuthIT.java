@@ -13,7 +13,7 @@ import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRepository;
-import cz.tstrecha.timetracker.service.impl.UserServiceImpl;
+import cz.tstrecha.timetracker.service.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -44,7 +44,7 @@ public class AuthIT extends IntegrationTest {
     private UserMapper userMapper;
 
     @Autowired
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @Test
     @SneakyThrows

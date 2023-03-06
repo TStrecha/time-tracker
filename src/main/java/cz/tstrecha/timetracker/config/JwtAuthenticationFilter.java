@@ -1,6 +1,6 @@
 package cz.tstrecha.timetracker.config;
 
-import cz.tstrecha.timetracker.service.impl.AuthenticationServiceImpl;
+import cz.tstrecha.timetracker.service.AuthenticationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
     public static final String AUTHORIZATION_HEADER_BEARER_PREFIX = "Bearer ";
 
-    private final AuthenticationServiceImpl authenticationService;
+    private final AuthenticationService authenticationService;
     private final UserDetailsService userDetailsService;
 
     @Override

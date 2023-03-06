@@ -5,7 +5,7 @@ import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
-import cz.tstrecha.timetracker.service.impl.UserServiceImpl;
+import cz.tstrecha.timetracker.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "auth", produces = {APPLICATION_JSON_VALUE})
 public class AuthController {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<Long> registerUser(@RequestBody @Valid UserRegistrationRequestDTO registrationRequest){

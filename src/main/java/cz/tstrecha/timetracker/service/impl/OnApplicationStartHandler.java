@@ -6,6 +6,7 @@ import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.repository.UserRepository;
+import cz.tstrecha.timetracker.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -23,7 +24,7 @@ import java.util.TimeZone;
 @RequiredArgsConstructor
 public class OnApplicationStartHandler {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     private final Environment environment;
 
