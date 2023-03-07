@@ -1,10 +1,12 @@
-package cz.tstrecha.timetracker.service;
+package cz.tstrecha.timetracker.service.impl;
 
+import cz.tstrecha.timetracker.config.AppConfig;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.repository.UserRepository;
+import cz.tstrecha.timetracker.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -28,9 +30,11 @@ public class OnApplicationStartHandler {
 
     private final UserRepository userRepository;
 
+    private final AppConfig appConfig;
+
     @EventListener(ApplicationReadyEvent.class)
     public void createUsersWhenEmptyDatabase() {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone(appConfig.getDefaultTimeZone()));
         if(Arrays.stream(environment.getActiveProfiles()).noneMatch(profile -> profile.equals("prod")) && userRepository.count() == 0) {
             log.warn("Creating mock users.");
 
