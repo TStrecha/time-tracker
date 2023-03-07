@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.config;
 
+import cz.tstrecha.timetracker.service.annotation.LoggedUserParameterResolver;
 import cz.tstrecha.timetracker.service.annotation.UserContextParameterResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -19,9 +20,12 @@ public class RestControllerCustomArguments implements WebMvcConfigurer {
 
     private final UserContextParameterResolver userContextParameterResolver;
 
+    private final LoggedUserParameterResolver loggedUserParameterResolver;
+
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(userContextParameterResolver);
+        resolvers.add(loggedUserParameterResolver);
     }
 
     @Override
