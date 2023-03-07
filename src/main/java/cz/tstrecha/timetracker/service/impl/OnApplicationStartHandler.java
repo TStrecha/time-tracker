@@ -54,7 +54,7 @@ public class OnApplicationStartHandler {
             var timeTrackerCreatedUser = userService.createUser(timeTrackerRegistrationRequest, UserRole.ADMIN);
             var authorizedCreatedUser = userService.createUser(authorizedUserRegistrationRequest, UserRole.USER);
 
-            userService.createRelationship(new RelationshipCreateUpdateRequestDTO(timeTrackerCreatedUser.getId(), authorizedCreatedUser.getId(),
+            userService.createRelationship(new RelationshipCreateUpdateRequestDTO(0L,timeTrackerCreatedUser.getId(), authorizedCreatedUser.getId(),
                     List.of("*"), OffsetDateTime.now(), null, false));
         }
     }
