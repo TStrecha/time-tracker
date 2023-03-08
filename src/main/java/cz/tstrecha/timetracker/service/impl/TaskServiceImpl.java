@@ -6,6 +6,7 @@ import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
 import cz.tstrecha.timetracker.dto.mapper.TaskMapper;
 import cz.tstrecha.timetracker.repository.TaskRepository;
+import cz.tstrecha.timetracker.repository.entity.TaskEntity;
 import cz.tstrecha.timetracker.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,12 +27,12 @@ public class TaskServiceImpl implements TaskService {
     }
 
     public TaskDTO createEmptyTask(IdentifierType identifierType, String identifierValue, LoggedUser loggedUser) {
-        var request = new TaskCreateRequestDTO();
+        var taskEntity = new TaskEntity();
+        taskEntity.setUser(loggedUser.getUserEntity());
         switch (identifierType) {
-            case NAME -> request.setName(identifierValue);
-            case CUSTOM_ID -> request.setCustomId(identifierValue);
+            case NAME -> taskEntity.setName(identifierValue);
+            case CUSTOM_ID -> taskEntity.setCustomId(identifierValue);
         }
-        var taskEntity = taskMapper.fromRequest(request, loggedUser.getUserEntity());
         taskEntity = taskRepository.save(taskEntity);
         return taskMapper.toDTO(taskEntity);
     }
