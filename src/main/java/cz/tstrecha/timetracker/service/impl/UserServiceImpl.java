@@ -101,22 +101,19 @@ public class UserServiceImpl implements UserService {
 
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
-            throw new UserInputException("You cannot create a relationship between other users");
+            throw new UserInputException("You can only create relationship for yourself.");
         }
         return createRelationship(request);
     }
 
     public RelationshipDTO updateRelationShip(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!userRelationshipRepository.existsById(request.getId())) {
-            throw new UserInputException("Relationship with this id doesn't exist");
+            throw new UserInputException("Relationship doesn't exist with id [" + request.getId() + "]");
         }
         if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
-            throw new UserInputException("You cannot edit a relationship between other users");
+            throw new UserInputException("You can only edit your relationships.");
         }
         if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
-            throw new UserInputException("You cannot edit a relationship between other users");
-        }
-        if (!Objects.equals(userContext.getId(), request.getFromId())) {
             throw new UserInputException("You cannot edit a relationship between other users");
         }
 
@@ -130,7 +127,6 @@ public class UserServiceImpl implements UserService {
         relation = userRelationshipRepository.save(relation);
         return relationshipMapper.toDTOFromReceiving(relation);
     }
-
 
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
