@@ -6,8 +6,20 @@ import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
 
 public interface TaskService {
-
+    /**
+     *
+     * @param taskRequest
+     * @param loggedUser
+     * @return
+     */
     TaskDTO createTask(TaskCreateRequestDTO taskRequest, LoggedUser loggedUser);
 
+    /**
+     *
+     * @param identifierType
+     * @param identifierValue
+     * @param loggedUser
+     * @return
+     */
     TaskDTO createEmptyTask(IdentifierType identifierType, String identifierValue, LoggedUser loggedUser);
 }
