@@ -8,8 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(imports = {StringUtils.class})
+@Mapper(imports = { StringUtils.class })
 public interface TaskMapper {
+
     TaskDTO toDTO(TaskEntity taskEntity);
 
     @Mapping(target = "id", source = "task.id")

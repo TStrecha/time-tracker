@@ -23,6 +23,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Entity(name = "Task")
 public class TaskEntity {
+
     private static final String SEQUENCE_NAME = "task_seq";
 
     @Id
