@@ -1,7 +1,14 @@
 package cz.tstrecha.timetracker.service;
 
 import cz.tstrecha.timetracker.constant.UserRole;
-import cz.tstrecha.timetracker.dto.*;
+import cz.tstrecha.timetracker.dto.LoggedUser;
+import cz.tstrecha.timetracker.dto.LoginRequestDTO;
+import cz.tstrecha.timetracker.dto.LoginResponseDTO;
+import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
+import cz.tstrecha.timetracker.dto.RelationshipDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
+import cz.tstrecha.timetracker.dto.UserDTO;
+import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 
 public interface UserService {
 
@@ -33,7 +40,7 @@ public interface UserService {
      * @param userContext
      * @return
      */
-    RelationshipDTO updateRelationShip(RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO, LoggedUser loggedUser, UserContext userContext);
+    RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO, LoggedUser loggedUser, UserContext userContext);
 
     /**
      * @param loginRequest

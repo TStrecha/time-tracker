@@ -4,7 +4,14 @@ import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
-import cz.tstrecha.timetracker.dto.*;
+import cz.tstrecha.timetracker.dto.LoggedUser;
+import cz.tstrecha.timetracker.dto.LoginRequestDTO;
+import cz.tstrecha.timetracker.dto.LoginResponseDTO;
+import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
+import cz.tstrecha.timetracker.dto.RelationshipDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
+import cz.tstrecha.timetracker.dto.UserDTO;
+import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
@@ -13,6 +20,7 @@ import cz.tstrecha.timetracker.repository.UserSettingsRepository;
 import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import cz.tstrecha.timetracker.repository.entity.UserSettingsEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
+import cz.tstrecha.timetracker.service.TransactionRunner;
 import cz.tstrecha.timetracker.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -42,6 +50,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final RelationshipMapper relationshipMapper;
+
+    private final TransactionRunner transactionRunner;
 
     @Transactional
     public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role) {
@@ -85,6 +95,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDTO(savedUser);
     }
 
+    @Transactional
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request) {
         var from = userRepository.findById(request.getFromId())
                 .orElseThrow(() -> new EntityNotFoundException("User entity not found by from id [" + request.getFromId() + "]"));
@@ -103,13 +114,11 @@ public class UserServiceImpl implements UserService {
         if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
             throw new UserInputException("You can only create relationship for yourself.");
         }
-        return createRelationship(request);
+        return transactionRunner.runInNewTransaction(() -> createRelationship(request));
     }
 
-    public RelationshipDTO updateRelationShip(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
-        if (!userRelationshipRepository.existsById(request.getId())) {
-            throw new UserInputException("Relationship doesn't exist with id [" + request.getId() + "]");
-        }
+    @Transactional
+    public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
             throw new UserInputException("You can only edit your relationships.");
         }
@@ -117,13 +126,9 @@ public class UserServiceImpl implements UserService {
             throw new UserInputException("You cannot edit a relationship between other users");
         }
 
-        var from = userRepository.findById(request.getFromId())
-                .orElseThrow(() -> new EntityNotFoundException("User entity not found by from id [" + request.getFromId() + "]"));
-        var to = userRepository.findById(request.getToId())
-                .orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + request.getToId() + "]"));
-
-        var relation = relationshipMapper.fromRequest(request, from, to);
-        relation.setId(request.getId());
+        var relation = userRelationshipRepository.findById(request.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Relationship entity not found by id [" + request.getId() + "]"));
+        relationshipMapper.updateRelationship(request, relation);
         relation = userRelationshipRepository.save(relation);
         return relationshipMapper.toDTOFromReceiving(relation);
     }
