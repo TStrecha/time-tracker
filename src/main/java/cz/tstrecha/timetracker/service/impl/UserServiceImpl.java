@@ -4,10 +4,12 @@ import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
+import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
@@ -18,6 +20,7 @@ import cz.tstrecha.timetracker.repository.UserSettingsRepository;
 import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import cz.tstrecha.timetracker.repository.entity.UserSettingsEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
+import cz.tstrecha.timetracker.service.TransactionRunner;
 import cz.tstrecha.timetracker.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -30,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 @Service
@@ -47,22 +51,24 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final RelationshipMapper relationshipMapper;
 
+    private final TransactionRunner transactionRunner;
+
     @Transactional
-    public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role){
-        if(registrationRequest.getAccountType() == AccountType.PERSON){
-            if(Strings.isEmpty(registrationRequest.getFirstName()) || Strings.isEmpty(registrationRequest.getLastName())){
+    public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role) {
+        if (registrationRequest.getAccountType() == AccountType.PERSON) {
+            if (Strings.isEmpty(registrationRequest.getFirstName()) || Strings.isEmpty(registrationRequest.getLastName())) {
                 throw new UserInputException("Person has to have first name and last name filled in.");
             }
-        } else if(registrationRequest.getAccountType() == AccountType.COMPANY){
-            if(Strings.isEmpty(registrationRequest.getCompanyName())){
+        } else if (registrationRequest.getAccountType() == AccountType.COMPANY) {
+            if (Strings.isEmpty(registrationRequest.getCompanyName())) {
                 throw new UserInputException("Company has to have company name filled in.");
             }
         }
 
-        if(userRepository.existsByEmail(registrationRequest.getEmail())){
+        if (userRepository.existsByEmail(registrationRequest.getEmail())) {
             throw new UserInputException("User with this email already exists.");
         }
-        if(IntStream.of(0, registrationRequest.getPassword().length() - 1).noneMatch(i -> Character.isDigit(registrationRequest.getPassword().charAt(i)))){
+        if (IntStream.of(0, registrationRequest.getPassword().length() - 1).noneMatch(i -> Character.isDigit(registrationRequest.getPassword().charAt(i)))) {
             throw new UserInputException("Password should contain at least 1 digit.");
         }
 
@@ -89,13 +95,40 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDTO(savedUser);
     }
 
-    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request){
+    @Transactional
+    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request) {
         var from = userRepository.findById(request.getFromId())
                 .orElseThrow(() -> new EntityNotFoundException("User entity not found by from id [" + request.getFromId() + "]"));
         var to = userRepository.findById(request.getToId())
                 .orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + request.getToId() + "]"));
 
+        if (userRelationshipRepository.existsByFromAndTo(from, to)) {
+            throw new UserInputException("Relationship already exists");
+        }
         var relation = relationshipMapper.fromRequest(request, from, to);
+        relation = userRelationshipRepository.save(relation);
+        return relationshipMapper.toDTOFromReceiving(relation);
+    }
+
+    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
+        if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
+            throw new UserInputException("You can only create relationship for yourself.");
+        }
+        return transactionRunner.runInNewTransaction(() -> createRelationship(request));
+    }
+
+    @Transactional
+    public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
+        if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
+            throw new UserInputException("You can only edit your relationships.");
+        }
+        if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
+            throw new UserInputException("You cannot edit a relationship between other users");
+        }
+
+        var relation = userRelationshipRepository.findById(request.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Relationship entity not found by id [" + request.getId() + "]"));
+        relationshipMapper.updateRelationship(request, relation);
         relation = userRelationshipRepository.save(relation);
         return relationshipMapper.toDTOFromReceiving(relation);
     }
@@ -104,6 +137,6 @@ public class UserServiceImpl implements UserService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
         var token = authenticationService.generateToken(user, null);
-        return new LoginResponseDTO(true, JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX+token, null);
+        return new LoginResponseDTO(true, JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token, null);
     }
 }
