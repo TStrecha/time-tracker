@@ -13,10 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +45,7 @@ public class TaskServiceImpl implements TaskService {
             return List.of();
         }
         var databaseSearchQuery = "%" + StringUtils.strip(query) + "%";
-        return taskRepository.searchForTasks(databaseSearchQuery, limit, loggedUser.getUserEntity().getId())
+        return taskRepository.searchForTasks(databaseSearchQuery, loggedUser.getUserEntity().getId(), limit)
                 .stream().map(taskMapper::toDTO).toList();
     }
 
