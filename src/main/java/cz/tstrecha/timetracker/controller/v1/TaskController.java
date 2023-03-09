@@ -12,11 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -39,5 +37,12 @@ public class TaskController {
                                                    @PathVariable String identifierValue,
                                                    @InjectLoggedUser LoggedUser user){
         return new ResponseEntity<>(taskService.createEmptyTask(identifier,identifierValue,user), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/search/{query}?limit=")
+    public ResponseEntity<List<TaskDTO>> searchTasks(@RequestParam(defaultValue = "5", required = false) Long limit,
+                                                     @PathVariable String query,
+                                                     @InjectLoggedUser LoggedUser user){
+        return new ResponseEntity<>(taskService.searchInTasks(limit,query,user), HttpStatus.OK);
     }
 }
