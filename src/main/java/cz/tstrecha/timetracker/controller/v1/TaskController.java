@@ -39,7 +39,7 @@ public class TaskController {
         return new ResponseEntity<>(taskService.createEmptyTask(identifier,identifierValue,user), HttpStatus.CREATED);
     }
 
-    @GetMapping("/search/{query}?limit=")
+    @GetMapping("/search/{query}")
     public ResponseEntity<List<TaskDTO>> searchTasks(@RequestParam(defaultValue = "5", required = false) Long limit,
                                                      @PathVariable String query,
                                                      @InjectLoggedUser LoggedUser user){

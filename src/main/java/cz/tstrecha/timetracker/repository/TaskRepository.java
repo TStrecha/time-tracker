@@ -7,8 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
-    @Query(value = "select * from task where (name_simple ilike :query or custom_id ilike :query" +
-            " or concat(custom_id, concat(' - ', name_simple)) ilike :query ) " +
-            "and user_id = :loggedUserId limit :limitFromQuery", nativeQuery = true)
-    List<TaskEntity> searchIntasks(Long limitFromQuery, String query, long loggedUserId);
+
+    @Query(value = "SELECT * FROM task WHERE (name_simple ILIKE :query OR custom_id ILIKE :query" +
+            " OR CONCAT(custom_id, CONCAT(' - ', name_simple)) ILIKE :query ) " +
+            "AND user_id = :loggedUserId LIMIT :limitFromQuery", nativeQuery = true)
+    List<TaskEntity> searchIntasks(Long limitFromQuery, String query, Long loggedUserId);
 }

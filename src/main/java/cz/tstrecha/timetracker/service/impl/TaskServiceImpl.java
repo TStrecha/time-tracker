@@ -46,8 +46,7 @@ public class TaskServiceImpl implements TaskService {
             return List.of();
         }
         query = StringUtils.strip(query);
-        return taskMapper.toListDTO(taskRepository.searchIntasks(limit,"%" + query + "%",loggedUser.getUserEntity().getId()));
+        return taskMapper.toListDTO(taskRepository.searchIntasks(limit,"%" + query + "%", loggedUser.getUserEntity().getId()));
     }
-
 
 }
