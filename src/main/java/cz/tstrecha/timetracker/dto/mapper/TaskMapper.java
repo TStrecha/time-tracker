@@ -8,6 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.List;
+
 @Mapper(imports = { StringUtils.class })
 public interface TaskMapper {
 
@@ -18,4 +20,6 @@ public interface TaskMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "nameSimple", expression = "java(StringUtils.stripAccents(task.getName()))")
     TaskEntity fromRequest(TaskCreateRequestDTO task, UserEntity user);
+
+    List<TaskDTO> toListDTO(List<TaskEntity> source);
 }

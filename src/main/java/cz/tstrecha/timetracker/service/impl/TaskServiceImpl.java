@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.service.impl;
 
+import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.constant.IdentifierType;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
@@ -9,7 +10,10 @@ import cz.tstrecha.timetracker.repository.TaskRepository;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity;
 import cz.tstrecha.timetracker.service.TaskService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -35,6 +39,14 @@ public class TaskServiceImpl implements TaskService {
         }
         taskEntity = taskRepository.save(taskEntity);
         return taskMapper.toDTO(taskEntity);
+    }
+
+    public List<TaskDTO> searchInTasks(Long limit, String query, LoggedUser loggedUser) {
+        if (query.length() < Constants.MIN_SEARCH_LENGTH){
+            return List.of();
+        }
+        query = StringUtils.strip(query);
+        return taskMapper.toListDTO(taskRepository.searchIntasks(limit,"%" + query + "%",loggedUser.getUserEntity().getId()));
     }
 
 
