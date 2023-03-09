@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -41,12 +43,13 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.toDTO(taskEntity);
     }
 
-    public List<TaskDTO> searchInTasks(Long limit, String query, LoggedUser loggedUser) {
+    public List<TaskDTO> searchForTasks(String query, Long limit, LoggedUser loggedUser) {
         if (query.length() < Constants.MIN_SEARCH_LENGTH){
             return List.of();
         }
-        query = StringUtils.strip(query);
-        return taskMapper.toListDTO(taskRepository.searchIntasks(limit,"%" + query + "%", loggedUser.getUserEntity().getId()));
+        var databaseSearchQuery = "%" + StringUtils.strip(query) + "%";
+        return taskRepository.searchForTasks(databaseSearchQuery, limit, loggedUser.getUserEntity().getId())
+                .stream().map(taskMapper::toDTO).toList();
     }
 
 }

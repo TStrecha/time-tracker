@@ -32,5 +32,5 @@ public interface TaskService {
      * @param loggedUser
      * @return
      */
-    List<TaskDTO> searchInTasks(Long limit, String query, LoggedUser loggedUser);
+    List<TaskDTO> searchForTasks(String query, Long limit, LoggedUser loggedUser);
 }
