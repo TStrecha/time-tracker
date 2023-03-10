@@ -1,0 +1,5 @@
+embedded:
+  postgresql:
+    docker-image: 'postgres:9.6.12'
+    reuse-container: true
+
