@@ -5,5 +5,3 @@ spring:
     url: jdbc:postgresql://${embedded.postgresql.host}:${embedded.postgresql.port}/${embedded.postgresql.schema}
     username: ${embedded.postgresql.user}
     password: ${embedded.postgresql.password}
-
-eureka.client.enabled: false
