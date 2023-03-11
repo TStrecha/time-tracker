@@ -3,6 +3,7 @@ package cz.tstrecha.timetracker.service.impl;
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
+import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
@@ -112,7 +113,7 @@ public class UserServiceImpl implements UserService {
 
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
-            throw new UserInputException("You can only create relationship for yourself.");
+            throw new PermissionException("You can only create relationship for yourself.");
         }
         return transactionRunner.runInNewTransaction(() -> createRelationship(request));
     }
@@ -120,7 +121,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
-            throw new UserInputException("You can only edit your relationships.");
+            throw new PermissionException("You can only edit your relationships.");
         }
         if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
             throw new UserInputException("You cannot edit a relationship between other users");

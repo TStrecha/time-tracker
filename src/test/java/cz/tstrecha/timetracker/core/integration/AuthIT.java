@@ -34,17 +34,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class AuthIT extends IntegrationTest {
 
-    private final static String USER_EMAIL = "test@case.1";
-    private final static String USER_PASSWORD = "testcase1";
+    private final static String USER_EMAIL = "test@case.0";
+    private final static String USER_PASSWORD = "testcase0";
     private final static String USER_FIRST_NAME = "Test";
-    private final static String USER_LAST_NAME = "Case1";
+    private final static String USER_LAST_NAME = "Case0";
     private final static String COMPANY_NAME = "Time Tracker s.r.o.";
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private UserService userService;
 
     @Test
     @SneakyThrows
@@ -140,7 +137,7 @@ public class AuthIT extends IntegrationTest {
     @SneakyThrows
     @Transactional
     public void test04_getLoggedUserDetails_failure() {
-        mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user/me")
+        mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn()
