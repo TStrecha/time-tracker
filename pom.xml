@@ -113,7 +113,7 @@
         <dependency>
             <groupId>com.playtika.testcontainers</groupId>
             <artifactId>embedded-postgresql</artifactId>
-            <version>2.2.11</version>
+            <version>2.3.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

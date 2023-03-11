@@ -4,6 +4,7 @@ import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import io.jsonwebtoken.Claims;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public interface AuthenticationService {
@@ -13,7 +14,7 @@ public interface AuthenticationService {
      * @param loggedAs
      * @return
      */
-    String generateToken(UserEntity user, ContextUserDTO loggedAs);
+    String generateToken(UserEntity user, @Nullable ContextUserDTO loggedAs);
 
     /**
      *
