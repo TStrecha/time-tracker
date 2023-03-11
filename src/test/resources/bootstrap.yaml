@@ -1,5 +1,5 @@
 embedded:
   postgresql:
-    docker-image: 'postgres:15.2'
+    docker-image: 'postgres:9.6.12'
     reuse-container: false
 
