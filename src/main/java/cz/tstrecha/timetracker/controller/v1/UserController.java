@@ -13,12 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -51,5 +46,11 @@ public class UserController {
                                  @InjectUserContext UserContext userContext){
         return new ResponseEntity<>(userService.updateRelationship(relationshipCreateUpdateRequestDTO,loggedUser,userContext),
                 HttpStatus.OK);
+    }
+
+    @PostMapping("/context")
+    public ResponseEntity<String> hasPermissionToSwitchContext(@RequestParam Long id,
+                                                            @InjectLoggedUser LoggedUser loggedUser){
+        return new ResponseEntity<>(userService.hasPermissionToChangeContext(id, loggedUser), HttpStatus.OK);
     }
 }
