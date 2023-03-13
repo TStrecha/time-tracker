@@ -5,14 +5,7 @@ import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
-import cz.tstrecha.timetracker.dto.LoggedUser;
-import cz.tstrecha.timetracker.dto.LoginRequestDTO;
-import cz.tstrecha.timetracker.dto.LoginResponseDTO;
-import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
-import cz.tstrecha.timetracker.dto.RelationshipDTO;
-import cz.tstrecha.timetracker.dto.UserContext;
-import cz.tstrecha.timetracker.dto.UserDTO;
-import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.*;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
@@ -133,6 +126,16 @@ public class UserServiceImpl implements UserService {
         relation = userRelationshipRepository.save(relation);
         return relationshipMapper.toDTOFromReceiving(relation);
     }
+
+    public String hasPermissionToChangeContext(Long id, LoggedUser loggedUser) {
+        var relationship = userRelationshipRepository.findByFromAndTo(loggedUser.getUserEntity(),
+                userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + id + "]")))
+                .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]"));
+        var userTo = userMapper.userRelationshipEntityToContextUserDTO(relationship);
+
+        return JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(loggedUser.getUserEntity(), userTo);
+    }
+
 
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
