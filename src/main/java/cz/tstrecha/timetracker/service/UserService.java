@@ -42,6 +42,12 @@ public interface UserService {
      */
     RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO, LoggedUser loggedUser, UserContext userContext);
 
+    /**
+     *
+     * @param id
+     * @param loggedUser
+     * @return
+     */
     String hasPermissionToChangeContext(Long id, LoggedUser loggedUser);
 
     /**
