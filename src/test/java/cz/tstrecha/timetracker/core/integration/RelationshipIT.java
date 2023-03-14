@@ -201,7 +201,7 @@ public class RelationshipIT extends IntegrationTest {
         relationshipRepository.save(relationshipEntity);
 
         request.setId(relationshipEntity.getId());
-        request.setPermissions(List.of(""));
+        request.setPermissions(List.of("report.read"));
         request.setSecureValues(true);
 
         mvc.perform(
