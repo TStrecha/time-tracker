@@ -150,7 +150,6 @@ public class UserServiceImpl implements UserService {
 
         return JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(userEntity, contextUserDTO);
     }
-
     @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
