@@ -21,6 +21,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,15 +63,10 @@ public abstract class IntegrationTest {
     }
 
     public List<Long> mockUsers(int amount){
-        List<Long> output = new ArrayList<>();
-        for (int i = 1; i <= amount; i++) {
+        return IntStream.range(0, amount).mapToObj(i -> {
             var request = createUserRequest(USER_EMAIL + i, USER_PASSWORD + i, USER_FIRST_NAME + i, USER_LAST_NAME + i);
-            transactionRunner.runInNewTransaction(() -> {
-                output.add(userService.createUser(request, UserRole.USER).getId());
-
-            });
-        }
-        return output;
+            return transactionRunner.runInNewTransaction(() -> userService.createUser(request, UserRole.USER).getId());
+        }).toList();
     }
 
     private UserRegistrationRequestDTO createUserRequest(String email,
