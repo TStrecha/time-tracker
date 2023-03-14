@@ -56,7 +56,7 @@ public class UserController {
 
     @PostMapping("/context")
     public ResponseEntity<String> hasPermissionToSwitchContext(@RequestParam Long id,
-                                                            @InjectUserContext UserContext userContext){
+                                                              @InjectUserContext UserContext userContext){
         return new ResponseEntity<>(userService.hasPermissionToChangeContext(id, userContext), HttpStatus.OK);
     }
 }
