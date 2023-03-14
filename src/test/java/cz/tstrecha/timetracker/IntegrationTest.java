@@ -59,7 +59,6 @@ public abstract class IntegrationTest {
 
     @BeforeEach
     public void init(){
-        cleanUpDB();
     }
 
     public List<Long> mockUsers(int amount){
@@ -72,15 +71,6 @@ public abstract class IntegrationTest {
             });
         }
         return output;
-    }
-
-    protected void cleanUpDB() {
-        transactionRunner.runInNewTransaction(() -> {
-            taskRepository.deleteAll();
-            relationshipRepository.deleteAll();
-            userSettingsRepository.deleteAll();
-            userRepository.deleteAll();
-        });
     }
 
     private UserRegistrationRequestDTO createUserRequest(String email,
