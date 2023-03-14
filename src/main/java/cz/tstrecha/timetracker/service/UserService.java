@@ -45,10 +45,10 @@ public interface UserService {
     /**
      *
      * @param id
-     * @param loggedUser
+     * @param userContext
      * @return
      */
-    String hasPermissionToChangeContext(Long id, LoggedUser loggedUser);
+    String hasPermissionToChangeContext(Long id, UserContext userContext);
 
     /**
      * @param loginRequest

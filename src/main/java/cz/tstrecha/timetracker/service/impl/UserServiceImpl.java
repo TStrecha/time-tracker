@@ -54,6 +54,7 @@ public class UserServiceImpl implements UserService {
 
     private final TransactionRunner transactionRunner;
 
+    @Override
     @Transactional
     public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role) {
         if (registrationRequest.getAccountType() == AccountType.PERSON) {
@@ -96,6 +97,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDTO(savedUser);
     }
 
+    @Override
     @Transactional
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request) {
         var from = userRepository.findById(request.getFromId())
@@ -111,6 +113,7 @@ public class UserServiceImpl implements UserService {
         return relationshipMapper.toDTOFromReceiving(relation);
     }
 
+    @Override
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
             throw new PermissionException("You can only create relationship for yourself.");
@@ -118,6 +121,7 @@ public class UserServiceImpl implements UserService {
         return transactionRunner.runInNewTransaction(() -> createRelationship(request));
     }
 
+    @Override
     @Transactional
     public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
@@ -134,16 +138,20 @@ public class UserServiceImpl implements UserService {
         return relationshipMapper.toDTOFromReceiving(relation);
     }
 
-    public String hasPermissionToChangeContext(Long id, LoggedUser loggedUser) {
-        var relationship = userRelationshipRepository.findByFromAndTo(loggedUser.getUserEntity(),
-                userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + id + "]")))
+    @Override
+    @Transactional
+    public String hasPermissionToChangeContext(Long id, UserContext userContext) {
+        var contextUserDTO = userContext.getRelationshipsReceiving().stream()
+                .filter(relation -> relation.getId().equals(id))
+                .findFirst()
                 .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]"));
-        var userTo = userMapper.userRelationshipEntityToContextUserDTO(relationship);
 
-        return JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(loggedUser.getUserEntity(), userTo);
+        var userEntity = userRepository.findById(userContext.getId()).orElseThrow();
+
+        return JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(userEntity, contextUserDTO);
     }
 
-
+    @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
