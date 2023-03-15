@@ -57,7 +57,7 @@ public class UserController {
 
     @PostMapping("/context")
     public ResponseEntity<LoginResponseDTO> changeContext(@RequestParam Long id,
-                                                                         @InjectUserContext UserContext userContext){
+                                                          @InjectUserContext UserContext userContext){
         return new ResponseEntity<>(userService.changeContext(id, userContext), HttpStatus.OK);
     }
 }
