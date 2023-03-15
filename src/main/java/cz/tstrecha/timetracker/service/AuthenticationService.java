@@ -16,6 +16,12 @@ public interface AuthenticationService {
      */
     String generateToken(UserEntity user, @Nullable ContextUserDTO loggedAs);
 
+    /**
+     *
+     * @param userId
+     * @param authorizedAsUserId
+     * @return
+     */
     String generateRefreshToken(Long userId, Long authorizedAsUserId);
 
     /**

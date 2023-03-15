@@ -74,7 +74,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .compact();
     }
 
-
     @Override
     public boolean isTokenValid(Claims claims, UserDetails userDetails){
         final var username = getUserEmailFromJwt(claims);
@@ -109,7 +108,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var userRelationship = user.getUserRelationshipReceiving().stream()
                 .filter(relation -> relation.getFrom().getId().equals(authorizedAsUserId))
                 .findFirst()
-                .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + authorizedAsUserId + "]"));
+                .orElseThrow(() -> new PermissionException("User doesn't have permission to change context to id [" + authorizedAsUserId + "]"));
 
         return generateToken(user, userMapper.userRelationshipEntityToContextUserDTO(userRelationship));
     }

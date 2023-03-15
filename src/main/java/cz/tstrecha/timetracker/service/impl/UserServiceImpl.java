@@ -140,7 +140,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public LoginResponseDTO hasPermissionToChangeContext(Long id, UserContext userContext) {
+    public LoginResponseDTO changeContext(Long id, UserContext userContext) {
         var contextUserDTO = userContext.getRelationshipsReceiving().stream()
                 .filter(relation -> relation.getId().equals(id))
                 .findFirst()
