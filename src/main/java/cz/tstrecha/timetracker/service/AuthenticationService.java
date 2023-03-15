@@ -47,6 +47,11 @@ public interface AuthenticationService {
      */
     UserContext getUserContext(String authToken);
 
+    /**
+     *
+     * @param token
+     * @return
+     */
     String refreshToken(String token);
 
     /**
