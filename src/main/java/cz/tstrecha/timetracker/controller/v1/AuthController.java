@@ -5,6 +5,7 @@ import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.service.AuthenticationService;
 import cz.tstrecha.timetracker.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,6 +29,8 @@ public class AuthController {
 
     private final UserService userService;
 
+    private final AuthenticationService authenticationService;
+
     @PostMapping("/register")
     public ResponseEntity<Long> registerUser(@RequestBody @Valid UserRegistrationRequestDTO registrationRequest){
         return new ResponseEntity<>(userService.createUser(registrationRequest, UserRole.USER).getId(), HttpStatus.CREATED);
@@ -38,4 +41,8 @@ public class AuthController {
         return new ResponseEntity<>(userService.loginUser(loginRequest), HttpStatus.OK);
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refreshToken(@RequestBody String token){
+        return new ResponseEntity<>(authenticationService.refreshToken(token), HttpStatus.OK);
+    }
 }

@@ -16,6 +16,8 @@ public interface AuthenticationService {
      */
     String generateToken(UserEntity user, @Nullable ContextUserDTO loggedAs);
 
+    String generateRefreshToken(Long userId, Long authorizedAsUserId);
+
     /**
      *
      * @param claims
@@ -23,6 +25,13 @@ public interface AuthenticationService {
      * @return
      */
     boolean isTokenValid(Claims claims, UserDetails userDetails);
+
+    /**
+     *
+     * @param claims
+     * @return
+     */
+    boolean isTokenExpired(Claims claims);
 
     /**
      *
@@ -37,6 +46,8 @@ public interface AuthenticationService {
      * @return
      */
     UserContext getUserContext(String authToken);
+
+    String refreshToken(String token);
 
     /**
      *

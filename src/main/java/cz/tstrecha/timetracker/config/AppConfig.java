@@ -24,6 +24,7 @@ public class AppConfig {
     public static class AuthConfig {
 
         private Duration tokenDuration;
+        private Duration refreshTokenDuration;
         private String secretKey;
         private SignatureAlgorithm signatureAlgorithm;
 
