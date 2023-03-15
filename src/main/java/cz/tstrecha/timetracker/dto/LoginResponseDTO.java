@@ -11,5 +11,5 @@ public class LoginResponseDTO {
 
     private boolean success;
     private String authToken;
-    private String refreshToken = null; // Not yet implemented
+    private String refreshToken;
 }

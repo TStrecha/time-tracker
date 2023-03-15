@@ -140,7 +140,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public String hasPermissionToChangeContext(Long id, UserContext userContext) {
+    public LoginResponseDTO hasPermissionToChangeContext(Long id, UserContext userContext) {
         var contextUserDTO = userContext.getRelationshipsReceiving().stream()
                 .filter(relation -> relation.getId().equals(id))
                 .findFirst()
@@ -148,7 +148,11 @@ public class UserServiceImpl implements UserService {
 
         var userEntity = userRepository.findById(userContext.getId()).orElseThrow();
 
-        return JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(userEntity, contextUserDTO);
+        var token = authenticationService.generateToken(userEntity, contextUserDTO);
+        var refreshToken = authenticationService.generateRefreshToken(userEntity.getId(), contextUserDTO.getId());
+        return new LoginResponseDTO(true,
+                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token,
+                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + refreshToken);
     }
 
     @Override
@@ -156,6 +160,9 @@ public class UserServiceImpl implements UserService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
         var token = authenticationService.generateToken(user, null);
-        return new LoginResponseDTO(true, JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token, null);
+        var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
+        return new LoginResponseDTO(true,
+                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token,
+                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + refreshToken);
     }
 }

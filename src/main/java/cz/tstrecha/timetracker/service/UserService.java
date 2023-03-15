@@ -48,7 +48,7 @@ public interface UserService {
      * @param userContext
      * @return
      */
-    String hasPermissionToChangeContext(Long id, UserContext userContext);
+    LoginResponseDTO hasPermissionToChangeContext(Long id, UserContext userContext);
 
     /**
      * @param loginRequest
