@@ -267,7 +267,7 @@ public class AuthIT extends IntegrationTest {
 
         var loginData = objectMapper.readValue(loginResponse.getContentAsString(), LoginResponseDTO.class);
         Assertions.assertTrue(loginData.isSuccess());
-        Assertions.assertNull(loginData.getRefreshToken());
+        Assertions.assertNotNull(loginData.getRefreshToken());
         Assertions.assertNotNull(loginData.getAuthToken());
         return loginData.getAuthToken();
     }
