@@ -15,6 +15,8 @@ import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.service.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.ServletException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -152,7 +154,7 @@ public class AuthIT extends IntegrationTest {
 
         var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, token))
+                        .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn()
                 .getResponse();
@@ -229,12 +231,62 @@ public class AuthIT extends IntegrationTest {
         var token = registerUserAndGetToken(request);
         var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, token))
+                        .header(JwtAuthenticationFilter.AUTHORIZATION_HEADER_NAME, JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn()
                 .getResponse();
         var responseUser = objectMapper.readValue(response.getContentAsString(), UserContext.class);
         Assertions.assertEquals(COMPANY_NAME, responseUser.getName());
+    }
+
+    @Test
+    @SneakyThrows
+    public void test11_refreshUser_success(){
+        var registeredToken = registerUserAndGetToken(createUserRequest()).split("\\.")[1];
+
+        var loginRequest = new LoginRequestDTO();
+        loginRequest.setEmail(USER_EMAIL);
+        loginRequest.setPassword(USER_PASSWORD);
+        var loginResponse = mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/login")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn()
+                .getResponse();
+
+        var refreshToken = objectMapper.readValue(loginResponse.getContentAsString(), LoginResponseDTO.class).getRefreshToken();
+
+        var refreshResponse = mvc.perform(
+                post(Constants.V1_CONTROLLER_ROOT + "auth/refresh")
+                  .contentType(MediaType.APPLICATION_JSON_VALUE)
+                  .content(refreshToken))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn()
+                .getResponse();
+
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+
+        var token = refreshResponse.getContentAsString().split("\\.")[1];
+        var actualUserContext = objectMapper.readValue(new String(decoder.decode(token)), UserContext.class);
+        var expectedUserContext = objectMapper.readValue(new String(decoder.decode(registeredToken)), UserContext.class);
+
+        Assertions.assertEquals(expectedUserContext, actualUserContext);
+    }
+
+    @Test
+    @SneakyThrows
+    public void test12_refreshUser_failure(){
+        var refreshToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjUxOSwiYXV0aG9yaXplZEFzVXNlcklkIjo1NTIsImlhdCI6MTY3ODk5MDU2NCwiZXhwIjoxNjc5MDc2OTY0fQ.3_qWnyc9weSct8eEXn5u7fohYw6TV6SSkRXiqyE8K_A";
+
+        var exception = Assertions.assertThrows(ServletException.class, () -> mvc.perform(
+                        post(Constants.V1_CONTROLLER_ROOT + "auth/refresh")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(refreshToken))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andReturn()
+                .getResponse());
+
+        Assertions.assertTrue(exception.getMessage().contains("JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted."));
     }
 
     private UserRegistrationRequestDTO createUserRequest(){
