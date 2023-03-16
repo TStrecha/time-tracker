@@ -161,8 +161,6 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
         var token = authenticationService.generateToken(user, null);
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
-        return new LoginResponseDTO(true,
-                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token,
-                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + refreshToken);
+        return new LoginResponseDTO(true, token, refreshToken);
     }
 }

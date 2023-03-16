@@ -99,6 +99,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public String refreshToken(String token) {
         var claims = extractClaims(token);
+        if(isTokenExpired(claims)) throw new IllegalArgumentException("Expired token");
         
         var userId = claims.get(USER_ID_CLAIM_KEY, Long.class);
         var authorizedAsUserId =  claims.get(AUTHORIZED_AS_USER_CLAIM_KEY, Long.class);
