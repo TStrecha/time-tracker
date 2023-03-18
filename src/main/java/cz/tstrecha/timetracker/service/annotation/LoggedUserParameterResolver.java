@@ -1,11 +1,11 @@
 package cz.tstrecha.timetracker.service.annotation;
 
 import cz.tstrecha.timetracker.annotation.InjectLoggedUser;
+import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRepository;
-import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.util.ContextUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
@@ -43,7 +43,7 @@ public class LoggedUserParameterResolver implements HandlerMethodArgumentResolve
         var userContext = ContextUtils.retrieveContextMandatory();
         var userEntity = annotation.fillUserEntity() ?
                 userRepository.findById(userContext.getId())
-                        .orElseThrow(() -> new UserInputException("User not found by id [" + userContext.getId() + "]")) : null;
+                        .orElseThrow(() -> new UserInputException("User not found by id [" + userContext.getId() + "]",  ErrorTypeCode.USER_NOT_FOUND_BY_ID)) : null;
         var loggedUser = userMapper.toLoggedUser(userContext.getLoggedAs(), userEntity);
 
         return loggedUser;

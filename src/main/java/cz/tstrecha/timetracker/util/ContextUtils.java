@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.util;
 
+import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.dto.UserContext;
 import lombok.experimental.UtilityClass;
@@ -44,7 +45,7 @@ public class ContextUtils {
             return true;
         }
         if (!permission.contains(".") || !requiredPermission.contains(".")) {
-            throw new PermissionException("Permission or required permission didn't match required pattern: [module.action]");
+            throw new PermissionException("Permission or required permission didn't match required pattern: [module.action]", ErrorTypeCode.PERMISSION_DIDNT_MATCH_REQUIRED_PATTERN);
         }
         String[] splitPermission = permission.split("\\.");
         String permissionModulePart = splitPermission[0];
