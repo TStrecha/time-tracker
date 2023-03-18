@@ -2,6 +2,7 @@ package cz.tstrecha.timetracker.service.impl;
 
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
+import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
@@ -59,19 +60,21 @@ public class UserServiceImpl implements UserService {
     public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role) {
         if (registrationRequest.getAccountType() == AccountType.PERSON) {
             if (Strings.isEmpty(registrationRequest.getFirstName()) || Strings.isEmpty(registrationRequest.getLastName())) {
-                throw new UserInputException("Person has to have first name and last name filled in.");
+                throw new UserInputException("Person has to have first name and last name filled in.",
+                        ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
+                        "UserRegistrationRequestDTO");
             }
         } else if (registrationRequest.getAccountType() == AccountType.COMPANY) {
             if (Strings.isEmpty(registrationRequest.getCompanyName())) {
-                throw new UserInputException("Company has to have company name filled in.");
+                throw new UserInputException("Company has to have company name filled in.", ErrorTypeCode.COMPANY_NAME_MISSING, "UserRegistrationRequestDTO");
             }
         }
 
         if (userRepository.existsByEmail(registrationRequest.getEmail())) {
-            throw new UserInputException("User with this email already exists.");
+            throw new UserInputException("User with this email already exists.", ErrorTypeCode.USER_EMAIL_EXISTS, "UserRegistrationRequestDTO");
         }
         if (IntStream.of(0, registrationRequest.getPassword().length() - 1).noneMatch(i -> Character.isDigit(registrationRequest.getPassword().charAt(i)))) {
-            throw new UserInputException("Password should contain at least 1 digit.");
+            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "UserRegistrationRequestDTO");
         }
 
         var passwordHashed = passwordEncoder.encode(registrationRequest.getPassword());
@@ -106,7 +109,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + request.getToId() + "]"));
 
         if (userRelationshipRepository.existsByFromAndTo(from, to)) {
-            throw new UserInputException("Relationship already exists");
+            throw new UserInputException("Relationship already exists", ErrorTypeCode.RELATIONSHIP_ALREADY_EXISTS, "RelationshipCreateUpdateRequestDTO");
         }
         var relation = relationshipMapper.fromRequest(request, from, to);
         relation = userRelationshipRepository.save(relation);
@@ -116,7 +119,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
-            throw new PermissionException("You can only create relationship for yourself.");
+            throw new PermissionException("You can only create relationship for yourself.", ErrorTypeCode.USER_ATTEMPTS_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
         }
         return transactionRunner.runInNewTransaction(() -> createRelationship(request));
     }
@@ -125,10 +128,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
-            throw new PermissionException("You can only edit your relationships.");
+            throw new PermissionException("You can only edit your relationships.",ErrorTypeCode.USER_ATTEMPTS_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
         }
         if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
-            throw new UserInputException("You cannot edit a relationship between other users");
+            throw new UserInputException("You cannot edit a relationship between other users",
+                    ErrorTypeCode.REALTIONSHIP_EDIT_WITHOUT_PERMISSION,
+                    "RelationshipCreateUpdateRequestDTO");
         }
 
         var relation = userRelationshipRepository.findById(request.getId())
@@ -144,7 +149,7 @@ public class UserServiceImpl implements UserService {
         var contextUserDTO = userContext.getRelationshipsReceiving().stream()
                 .filter(relation -> relation.getId().equals(id))
                 .findFirst()
-                .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]"));
+                .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]", ErrorTypeCode.USER_DOESNT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
 
         var userEntity = userRepository.findById(userContext.getId()).orElseThrow();
 

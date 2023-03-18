@@ -2,6 +2,7 @@ package cz.tstrecha.timetracker.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tstrecha.timetracker.config.AppConfig;
+import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
@@ -12,7 +13,6 @@ import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
@@ -111,7 +111,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var userRelationship = user.getUserRelationshipReceiving().stream()
                 .filter(relation -> relation.getFrom().getId().equals(authorizedAsUserId))
                 .findFirst()
-                .orElseThrow(() -> new PermissionException("User doesn't have permission to change context to id [" + authorizedAsUserId + "]"));
+                .orElseThrow(() -> new PermissionException("User doesn't have permission to change context to id [" + authorizedAsUserId + "]", ErrorTypeCode.USER_DOESNT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
 
         return generateToken(user, userMapper.userRelationshipEntityToContextUserDTO(userRelationship));
     }
