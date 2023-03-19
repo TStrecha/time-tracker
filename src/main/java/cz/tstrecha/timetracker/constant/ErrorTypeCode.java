@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public enum ErrorTypeCode {
+
     PERSON_FIRST_LAST_NAME_MISSING("PersonFirstLastNameMissing"),
     COMPANY_NAME_MISSING("CompanyNameMissing"),
     USER_EMAIL_EXISTS("UserEmailExists"),
