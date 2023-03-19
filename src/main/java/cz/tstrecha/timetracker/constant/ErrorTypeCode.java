@@ -1,7 +1,9 @@
 package cz.tstrecha.timetracker.constant;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@AllArgsConstructor
 public enum ErrorTypeCode {
     PERSON_FIRST_LAST_NAME_MISSING("PersonFirstLastNameMissing"),
     COMPANY_NAME_MISSING("CompanyNameMissing"),
@@ -20,8 +22,4 @@ public enum ErrorTypeCode {
 
     @Getter
     private String localizationCode;
-
-    ErrorTypeCode(String localizationCode){
-        this.localizationCode = localizationCode;
-    }
 }
