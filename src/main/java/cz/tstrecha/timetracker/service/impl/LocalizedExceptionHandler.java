@@ -30,7 +30,9 @@ public class LocalizedExceptionHandler {
 
         var httpStatus = Arrays.stream(exception.getClass().getAnnotations())
                 .filter(annotation -> annotation instanceof ResponseStatus)
-                .findFirst().map(annotation -> ((ResponseStatus) annotation).value()).orElse(HttpStatus.INTERNAL_SERVER_ERROR);
+                .findFirst()
+                .map(annotation -> ((ResponseStatus) annotation).value())
+                .orElse(HttpStatus.INTERNAL_SERVER_ERROR);
 
         return new ResponseEntity<>(output, httpStatus);
     }
