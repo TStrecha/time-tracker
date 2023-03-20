@@ -58,8 +58,8 @@ public class RelationshipIT extends IntegrationTest {
         Assertions.assertEquals(request.getToId(), relation.getOppositeUserId());
         Assertions.assertEquals(request.getPermissions(), relation.getPermissions());
         Assertions.assertEquals(getDisplayName(userRepository.findById(request.getToId()).orElseThrow()), relation.getDisplayName());
-        Assertions.assertEquals(request.getValidFrom(), relation.getValidFrom());
-        Assertions.assertEquals(request.getValidTo(), relation.getValidTo());
+        Assertions.assertEquals(request.getActiveFrom(), relation.getActiveFrom());
+        Assertions.assertEquals(request.getActiveTo(), relation.getActiveTo());
     }
 
     @Test
@@ -178,8 +178,8 @@ public class RelationshipIT extends IntegrationTest {
 
         Assertions.assertEquals(request.getPermissions(), relation.getPermissions());
         Assertions.assertEquals(getDisplayName(userEntities.get(1)), relation.getDisplayName());
-        Assertions.assertEquals(request.getValidFrom(), relation.getValidFrom());
-        Assertions.assertEquals(request.getValidTo(), relation.getValidTo());
+        Assertions.assertEquals(request.getActiveFrom(), relation.getActiveFrom());
+        Assertions.assertEquals(request.getActiveTo(), relation.getActiveTo());
     }
 
     @Test

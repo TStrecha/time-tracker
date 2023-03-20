@@ -19,8 +19,8 @@ public class RelationshipCreateUpdateRequestDTO {
 
     private List<String> permissions;
 
-    private OffsetDateTime validFrom = OffsetDateTime.now();
-    private OffsetDateTime validTo;
+    private OffsetDateTime activeFrom = OffsetDateTime.now();
+    private OffsetDateTime activeTo;
 
     private boolean secureValues;
 

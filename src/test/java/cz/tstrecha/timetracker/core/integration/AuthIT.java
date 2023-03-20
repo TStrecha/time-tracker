@@ -12,10 +12,7 @@ import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
-import cz.tstrecha.timetracker.repository.UserRepository;
-import cz.tstrecha.timetracker.service.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.ServletException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -74,15 +71,15 @@ public class AuthIT extends IntegrationTest {
         Assertions.assertEquals(user.getId(), user.getRelationsReceiving().get(0).getOppositeUserId());
         Assertions.assertEquals(user.getDisplayName(), user.getRelationsReceiving().get(0).getDisplayName());
         Assertions.assertEquals(List.of("*"), user.getRelationsReceiving().get(0).getPermissions());
-        Assertions.assertNotNull(user.getRelationsReceiving().get(0).getValidFrom());
-        Assertions.assertNull(user.getRelationsReceiving().get(0).getValidTo());
+        Assertions.assertNotNull(user.getRelationsReceiving().get(0).getActiveFrom());
+        Assertions.assertNull(user.getRelationsReceiving().get(0).getActiveTo());
 
         Assertions.assertEquals(1, user.getRelationsGiving().size());
         Assertions.assertEquals(user.getId(), user.getRelationsGiving().get(0).getOppositeUserId());
         Assertions.assertEquals(user.getDisplayName(), user.getRelationsGiving().get(0).getDisplayName());
         Assertions.assertEquals(List.of("*"), user.getRelationsGiving().get(0).getPermissions());
-        Assertions.assertNotNull(user.getRelationsGiving().get(0).getValidFrom());
-        Assertions.assertNull(user.getRelationsGiving().get(0).getValidTo());
+        Assertions.assertNotNull(user.getRelationsGiving().get(0).getActiveFrom());
+        Assertions.assertNull(user.getRelationsGiving().get(0).getActiveTo());
 
         var settings = userRepository.findById(user.getId()).get().getSettings();
         Assertions.assertEquals(1, settings.size());

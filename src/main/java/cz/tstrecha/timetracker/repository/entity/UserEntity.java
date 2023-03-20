@@ -3,14 +3,7 @@ package cz.tstrecha.timetracker.repository.entity;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.SecretMode;
 import cz.tstrecha.timetracker.constant.UserRole;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,6 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "AppUser")
+@Table(indexes = @Index(name = "user_id_index", columnList = "id"))
 public class UserEntity implements UserDetails {
 
     private static final String SEQUENCE_NAME = "user_seq";
@@ -54,6 +48,7 @@ public class UserEntity implements UserDetails {
     private String companyName;
 
     @Email
+    @Column(unique = true)
     private String email; // Also user's login
     private String passwordHashed;
 
@@ -68,8 +63,6 @@ public class UserEntity implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<UserSettingsEntity> settings = new ArrayList<>();
-
-    private boolean active = true;
 
     @CreationTimestamp
     private OffsetDateTime createdAt;

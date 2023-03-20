@@ -17,8 +17,8 @@ public class RelationshipDTO {
 
     private List<String> permissions;
 
-    private OffsetDateTime validFrom;
-    private OffsetDateTime validTo;
+    private OffsetDateTime activeFrom;
+    private OffsetDateTime activeTo;
 
     private boolean secureValues;
 
