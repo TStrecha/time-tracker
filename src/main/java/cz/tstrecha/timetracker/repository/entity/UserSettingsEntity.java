@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Data
@@ -31,6 +32,10 @@ public class UserSettingsEntity {
     private OffsetDateTime createdAt;
     @UpdateTimestamp
     private OffsetDateTime modifiedAt;
+
+    private BigDecimal moneyPerHour;
+
+    private BigDecimal moneyPerMonth;
 
     @ManyToOne
     private UserEntity user;

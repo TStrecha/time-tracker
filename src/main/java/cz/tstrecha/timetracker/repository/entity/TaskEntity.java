@@ -1,15 +1,7 @@
 package cz.tstrecha.timetracker.repository.entity;
 
 import cz.tstrecha.timetracker.constant.TaskStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,10 +10,19 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
 
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "Task")
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"customId", "user_id"}),
+        indexes = {
+                @Index(name = "task_id_index", columnList = "id"),
+                @Index(name = "cid_index", columnList = "customId"),
+                @Index(name = "name_index", columnList = "name")
+        }
+)
 public class TaskEntity {
 
     private static final String SEQUENCE_NAME = "task_seq";
@@ -38,8 +39,10 @@ public class TaskEntity {
 
     private String nameSimple;
 
+    @Column(columnDefinition = "TEXT")
     private String note;
 
+    @Column(columnDefinition = "TEXT")
     private String text;
 
     @Enumerated(EnumType.STRING)

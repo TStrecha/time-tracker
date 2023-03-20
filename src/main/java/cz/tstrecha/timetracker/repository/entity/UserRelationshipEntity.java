@@ -1,11 +1,6 @@
 package cz.tstrecha.timetracker.repository.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "UserRelationship")
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"from_id","to_id"}))
 public class UserRelationshipEntity {
 
     private static final String SEQUENCE_NAME = "user_relationship_seq";
@@ -37,8 +33,8 @@ public class UserRelationshipEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<String> permissions;
 
-    private OffsetDateTime validFrom = OffsetDateTime.now();
-    private OffsetDateTime validTo;
+    private OffsetDateTime activeFrom = OffsetDateTime.now();
+    private OffsetDateTime activeTo;
 
     private boolean secureValues;
 
