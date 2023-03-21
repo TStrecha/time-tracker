@@ -34,6 +34,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -148,6 +149,8 @@ public class UserServiceImpl implements UserService {
     public LoginResponseDTO changeContext(Long id, UserContext userContext) {
         var contextUserDTO = userContext.getRelationshipsReceiving().stream()
                 .filter(relation -> relation.getId().equals(id))
+                .filter(relation -> relation.getActiveFrom().isBefore(OffsetDateTime.now()) &&
+                        (relation.getActiveTo() == null || relation.getActiveTo().isAfter(OffsetDateTime.now())))
                 .findFirst()
                 .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]", ErrorTypeCode.USER_DOESNT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
 
