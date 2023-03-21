@@ -39,7 +39,7 @@ public class AspectClass {
     @Before("@annotation(check)")
     public void handlePermissionChecks(JoinPoint jp, PermissionCheck check) {
         var context = ContextUtils.retrieveContextMandatory();
-        if (ContextUtils.hasPermissions(context, check.value())) {
+        if (!ContextUtils.hasPermissions(context, check.value())) {
             throw new PermissionException("User context doesn't have the required permission.", ErrorTypeCode.USER_DOESNT_HAVE_REQUIRED_PERMISSIONS);
         }
     }
