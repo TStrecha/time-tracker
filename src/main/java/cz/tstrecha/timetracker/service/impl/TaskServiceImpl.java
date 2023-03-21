@@ -102,7 +102,6 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.toDTO(taskEntity);
     }
 
-
     @Override
     @Transactional
     public List<TaskDTO> searchForTasks(String query, Long limit, LoggedUser loggedUser) {
