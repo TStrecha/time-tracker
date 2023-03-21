@@ -20,7 +20,7 @@ public class TaskCreateRequestDTO {
 
     private String note;
 
-    private String text;
+    private String description;
 
     private TaskStatus status;
 

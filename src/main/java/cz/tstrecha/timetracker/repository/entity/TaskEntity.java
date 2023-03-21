@@ -1,7 +1,18 @@
 package cz.tstrecha.timetracker.repository.entity;
 
 import cz.tstrecha.timetracker.constant.TaskStatus;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +31,7 @@ import java.time.OffsetDateTime;
         indexes = {
                 @Index(name = "task_id_index", columnList = "id"),
                 @Index(name = "cid_index", columnList = "customId"),
-                @Index(name = "name_index", columnList = "name")
+                @Index(name = "task_name_index", columnList = "name")
         }
 )
 public class TaskEntity {
@@ -43,7 +54,7 @@ public class TaskEntity {
     private String note;
 
     @Column(columnDefinition = "TEXT")
-    private String text;
+    private String description;
 
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
