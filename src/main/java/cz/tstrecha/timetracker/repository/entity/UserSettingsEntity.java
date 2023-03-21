@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
+import jakarta.validation.constraints.Digits;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,9 +33,11 @@ public class UserSettingsEntity {
     private OffsetDateTime createdAt;
     @UpdateTimestamp
     private OffsetDateTime modifiedAt;
-
+    
+    @Digits(integer = 50, fraction = 2)
     private BigDecimal moneyPerHour;
 
+    @Digits(integer = 50, fraction = 2)
     private BigDecimal moneyPerMonth;
 
     @ManyToOne
