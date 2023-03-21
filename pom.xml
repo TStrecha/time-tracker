@@ -22,6 +22,10 @@
         <openapi.version>2.0.2</openapi.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <lombok.version>1.18.20</lombok.version>
+        <liquibase-maven-plugin.version>4.19.1</liquibase-maven-plugin.version>
+        <spring-cloud-starter-bootstrap.version>4.0.0</spring-cloud-starter-bootstrap.version>
+        <embedded-postgresql.version>2.3.2</embedded-postgresql.version>
+        <jackson-datatype-jsr310.version>2.14.2</jackson-datatype-jsr310.version>
     </properties>
     <dependencies>
         <dependency>
@@ -89,7 +93,7 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-maven-plugin</artifactId>
-            <version>4.19.1</version>
+            <version>${liquibase-maven-plugin.version}</version>
         </dependency>
 
         <!-- OpenApi -->
@@ -107,19 +111,19 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
-            <version>4.0.0</version>
+            <version>${spring-cloud-starter-bootstrap.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.playtika.testcontainers</groupId>
             <artifactId>embedded-postgresql</artifactId>
-            <version>2.3.2</version>
+            <version>${embedded-postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.14.2</version>
+            <version>${jackson-datatype-jsr310.version}</version>
         </dependency>
     </dependencies>
 

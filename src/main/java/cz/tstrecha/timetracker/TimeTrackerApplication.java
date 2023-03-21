@@ -12,12 +12,11 @@ public class TimeTrackerApplication {
     public static void main(String[] args) {
         SpringApplication.run(TimeTrackerApplication.class, args);
     }
-    
+
     @Bean
     public ObjectMapper objectMapper(){
         var mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         return mapper;
     }
-
 }
