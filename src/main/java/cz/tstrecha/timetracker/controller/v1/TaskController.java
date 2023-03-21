@@ -59,6 +59,7 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/{newStatus}")
+    @PermissionCheck("task.update")
     public ResponseEntity<TaskDTO> changeTaskStatus(@PathVariable Long id,
                                                     @PathVariable TaskStatus newStatus,
                                                     @InjectLoggedUser LoggedUser loggedUser){
@@ -66,11 +67,13 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
+    @PermissionCheck("task.update")
     public ResponseEntity<TaskDTO> deleteTask(@PathVariable Long id, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.deleteTask(id, loggedUser), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/reactivate")
+    @PermissionCheck("task.update")
     public ResponseEntity<TaskDTO> reactivateTask(@PathVariable Long id, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.reactivateTask(id, loggedUser), HttpStatus.OK);
     }
