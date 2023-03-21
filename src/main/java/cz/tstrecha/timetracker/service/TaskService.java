@@ -1,6 +1,7 @@
 package cz.tstrecha.timetracker.service;
 
 import cz.tstrecha.timetracker.constant.IdentifierType;
+import cz.tstrecha.timetracker.constant.TaskStatus;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
@@ -24,6 +25,39 @@ public interface TaskService {
      * @return
      */
     TaskDTO createEmptyTask(IdentifierType identifierType, String identifierValue, LoggedUser loggedUser);
+
+    /**
+     *
+     * @param taskRequest
+     * @param loggedUser
+     * @return
+     */
+    TaskDTO updateTask(TaskCreateRequestDTO taskRequest, LoggedUser loggedUser);
+
+    /**
+     *
+     * @param id
+     * @param taskStatus
+     * @param loggedUser
+     * @return
+     */
+    TaskDTO changeTaskStatus(Long id, TaskStatus taskStatus, LoggedUser loggedUser);
+
+    /**
+     *
+     * @param id
+     * @param loggedUser
+     * @return
+     */
+    TaskDTO deleteTask(Long id, LoggedUser loggedUser);
+
+    /**
+     *
+     * @param id
+     * @param loggedUser
+     * @return
+     */
+    TaskDTO reactivateTask(Long id, LoggedUser loggedUser);
 
     /**
      *
