@@ -1,7 +1,5 @@
 package cz.tstrecha.timetracker.core.integration;
 
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import cz.tstrecha.timetracker.IntegrationTest;
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
@@ -125,7 +123,6 @@ public class AuthIT extends IntegrationTest {
         var algorithmHeader = objectMapper.readValue(header, AlgorithmHeader.class);
         Assertions.assertEquals(SignatureAlgorithm.HS256, algorithmHeader.alg);
 
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         var contextFromToken = objectMapper.readValue(payload, ContextWrapper.class).getUser();
         var userEntity = userRepository.findById(contextFromToken.getId()).get();
         var ownRelationship = userEntity.getUserRelationshipReceiving().stream()
@@ -267,7 +264,6 @@ public class AuthIT extends IntegrationTest {
         Base64.Decoder decoder = Base64.getUrlDecoder();
 
         var token = refreshResponse.getContentAsString().split("\\.")[1];
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         var actualUserContext = objectMapper.readValue(new String(decoder.decode(token)), UserContext.class);
         var expectedUserContext = objectMapper.readValue(new String(decoder.decode(registeredToken)), UserContext.class);
 
