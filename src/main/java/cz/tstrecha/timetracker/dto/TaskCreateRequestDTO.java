@@ -12,7 +12,7 @@ public class TaskCreateRequestDTO {
 
     private Long id;
 
-    private String customId;
+    private Long customId;
 
     private String name;
 

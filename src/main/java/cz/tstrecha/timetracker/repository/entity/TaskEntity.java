@@ -44,7 +44,7 @@ public class TaskEntity {
     private Long id;
 
     @Column(length = 50)
-    private String customId;
+    private Long customId;
 
     private String name;
 

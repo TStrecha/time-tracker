@@ -9,6 +9,7 @@ import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
+import cz.tstrecha.timetracker.dto.TaskFilter;
 import cz.tstrecha.timetracker.dto.mapper.TaskMapper;
 import cz.tstrecha.timetracker.repository.TaskRepository;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity;
@@ -16,6 +17,8 @@ import cz.tstrecha.timetracker.service.TaskService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,7 +46,7 @@ public class TaskServiceImpl implements TaskService {
         taskEntity.setUser(loggedUser.getUserEntity());
         switch (identifierType) {
             case NAME -> taskEntity.setName(identifierValue);
-            case CUSTOM_ID -> taskEntity.setCustomId(identifierValue);
+            case CUSTOM_ID -> taskEntity.setCustomId(Long.valueOf(identifierValue));
         }
         taskEntity = taskRepository.save(taskEntity);
         return taskMapper.toDTO(taskEntity);
@@ -113,4 +116,13 @@ public class TaskServiceImpl implements TaskService {
                 .stream().map(taskMapper::toDTO).toList();
     }
 
+    @Override
+    @Transactional
+    public List<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser) {
+        var enumValue = Enum.valueOf(Sort.Direction.class, taskFilter.getSortDirection().name());
+        var sort = Sort.by(enumValue, taskFilter.getSort().getFieldName());
+
+        var pageable = PageRequest.of(taskFilter.getPageNumber(), taskFilter.getRows(), sort);
+        return taskRepository.findByFilter(taskFilter, pageable, loggedUser).stream().map(taskMapper::toDTO).toList();
+    }
 }

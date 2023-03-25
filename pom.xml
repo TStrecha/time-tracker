@@ -26,6 +26,7 @@
         <spring-cloud-starter-bootstrap.version>4.0.0</spring-cloud-starter-bootstrap.version>
         <embedded-postgresql.version>2.3.2</embedded-postgresql.version>
         <jackson-datatype-jsr310.version>2.14.2</jackson-datatype-jsr310.version>
+        <hibernate.version>6.1.7.Final</hibernate.version>
     </properties>
     <dependencies>
         <dependency>
@@ -125,6 +126,11 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson-datatype-jsr310.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jpamodelgen</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -146,7 +152,11 @@
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${mapstruct.version}</version>
                         </path>
-
+                        <path>
+                            <groupId>org.hibernate</groupId>
+                            <artifactId>hibernate-jpamodelgen</artifactId>
+                            <version>${hibernate.version}</version>
+                        </path>
                     </annotationProcessorPaths>
                     <release>17</release>
                     <target>17</target>

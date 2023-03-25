@@ -5,6 +5,7 @@ import cz.tstrecha.timetracker.constant.TaskStatus;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
+import cz.tstrecha.timetracker.dto.TaskFilter;
 
 import java.util.List;
 
@@ -67,4 +68,12 @@ public interface TaskService {
      * @return
      */
     List<TaskDTO> searchForTasks(String query, Long limit, LoggedUser loggedUser);
+
+    /**
+     *
+     * @param taskFilter
+     * @param loggedUser
+     * @return
+     */
+    List<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser);
 }
