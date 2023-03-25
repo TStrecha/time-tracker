@@ -1,0 +1,21 @@
+package cz.tstrecha.timetracker.constant;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+public enum TaskField {
+    ID("id"),
+    CUSTOM_ID("customId"),
+    NAME("name"),
+    NAME_SIMPLE("nameSimple"),
+    NOTE("note"),
+    DESCRIPTION("description"),
+    STATUS("status"),
+    ESTIMATE("estimate"),
+    ACTIVE("active");
+
+    @Getter
+    private final String fieldName;
+}
+
