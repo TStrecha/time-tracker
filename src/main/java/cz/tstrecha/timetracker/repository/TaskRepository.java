@@ -56,4 +56,3 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpec
         }, pageable).toList();
     }
 }
-//                    case CUSTOM_ID -> predicates.add(cb.like(root.get(TaskEntity_.CUSTOM_ID), cb.literal(String.valueOf(taskFilter.getFieldFilters().get(taskField)))));
