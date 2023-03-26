@@ -119,7 +119,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public List<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser) {
-        var enumValue = Enum.valueOf(Sort.Direction.class, taskFilter.getSortDirection().name());
+        var enumValue = Sort.Direction.valueOf(taskFilter.getSortDirection().name());
         var sort = Sort.by(enumValue, taskFilter.getSort().getFieldName());
 
         var pageable = PageRequest.of(taskFilter.getPageNumber(), taskFilter.getRows(), sort);

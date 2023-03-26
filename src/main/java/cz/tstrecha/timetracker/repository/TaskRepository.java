@@ -31,16 +31,17 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpec
     default List<TaskEntity> findByFilter(TaskFilter taskFilter, Pageable pageable, LoggedUser loggedUser){
         return findAll((Specification<TaskEntity>) (root, query, cb) -> {
             query.distinct(true);
+
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get(TaskEntity_.USER), loggedUser.getUserEntity()));
+
             for (TaskField taskField : taskFilter.getFieldFilters().keySet()) {
                 switch (taskField) {
                     case ID -> predicates.add(cb.equal(root.get(TaskEntity_.ID), taskFilter.getFieldFilters().get(taskField)));
-                    case CUSTOM_ID -> predicates.add(cb.equal(root.get(TaskEntity_.CUSTOM_ID), taskFilter.getFieldFilters().get(taskField)));
-                    case NAME -> predicates.add(cb.like(root.get(TaskEntity_.NAME), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
-                    case NAME_SIMPLE -> predicates.add(cb.like(root.get(TaskEntity_.NAME_SIMPLE), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
-                    case NOTE -> predicates.add(cb.like(root.get(TaskEntity_.NOTE), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
-                    case DESCRIPTION -> predicates.add(cb.like(root.get(TaskEntity_.DESCRIPTION), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
+                    case NAME_SIMPLE -> predicates.add(cb.like(cb.lower(root.get(TaskEntity_.NAME_SIMPLE)), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
+                    case CUSTOM_ID -> predicates.add(cb.like(root.get(TaskEntity_.CUSTOM_ID).as(String.class), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
+                    case NOTE -> predicates.add(cb.like(cb.lower(root.get(TaskEntity_.NOTE)), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
+                    case DESCRIPTION -> predicates.add(cb.like(cb.lower(root.get(TaskEntity_.DESCRIPTION)), FilterUtils.enrichLikeStatements(taskFilter.getFieldFilters().get(taskField))));
                     case STATUS -> predicates.add(cb.equal(root.get(TaskEntity_.STATUS), TaskStatus.valueOf(taskFilter.getFieldFilters().get(taskField))));
                     case ESTIMATE -> predicates.add(cb.equal(root.get(TaskEntity_.ESTIMATE), taskFilter.getFieldFilters().get(taskField)));
                     case ACTIVE -> {
@@ -50,7 +51,9 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpec
                     }
                 }
             }
+
             return cb.and(predicates.toArray(Predicate[]::new));
         }, pageable).toList();
     }
 }
+//                    case CUSTOM_ID -> predicates.add(cb.like(root.get(TaskEntity_.CUSTOM_ID), cb.literal(String.valueOf(taskFilter.getFieldFilters().get(taskField)))));
