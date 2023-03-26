@@ -5,9 +5,9 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public enum TaskField {
+
     ID("id"),
     CUSTOM_ID("customId"),
-    NAME("name"),
     NAME_SIMPLE("nameSimple"),
     NOTE("note"),
     DESCRIPTION("description"),
