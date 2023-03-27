@@ -2,7 +2,12 @@ package cz.tstrecha.timetracker.dto.mapper;
 
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
-import cz.tstrecha.timetracker.dto.*;
+import cz.tstrecha.timetracker.dto.ContextUserDTO;
+import cz.tstrecha.timetracker.dto.LoggedUser;
+import cz.tstrecha.timetracker.dto.RelationshipDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
+import cz.tstrecha.timetracker.dto.UserDTO;
+import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import org.mapstruct.Mapper;
