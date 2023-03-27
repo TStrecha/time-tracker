@@ -1,14 +1,7 @@
 package cz.tstrecha.timetracker.service;
 
 import cz.tstrecha.timetracker.constant.UserRole;
-import cz.tstrecha.timetracker.dto.LoggedUser;
-import cz.tstrecha.timetracker.dto.LoginRequestDTO;
-import cz.tstrecha.timetracker.dto.LoginResponseDTO;
-import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
-import cz.tstrecha.timetracker.dto.RelationshipDTO;
-import cz.tstrecha.timetracker.dto.UserContext;
-import cz.tstrecha.timetracker.dto.UserDTO;
-import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.*;
 
 public interface UserService {
 
@@ -55,4 +48,12 @@ public interface UserService {
      * @return
      */
     LoginResponseDTO loginUser(LoginRequestDTO loginRequest);
+
+    /**
+     *
+     * @param passwordChangeDTO
+     * @param userContext
+     * @return
+     */
+    LoginResponseDTO changePassword(PasswordChangeDTO passwordChangeDTO, UserContext userContext);
 }

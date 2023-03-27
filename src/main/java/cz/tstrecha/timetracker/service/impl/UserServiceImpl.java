@@ -6,14 +6,7 @@ import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
-import cz.tstrecha.timetracker.dto.LoggedUser;
-import cz.tstrecha.timetracker.dto.LoginRequestDTO;
-import cz.tstrecha.timetracker.dto.LoginResponseDTO;
-import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
-import cz.tstrecha.timetracker.dto.RelationshipDTO;
-import cz.tstrecha.timetracker.dto.UserContext;
-import cz.tstrecha.timetracker.dto.UserDTO;
-import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.*;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
@@ -171,4 +164,24 @@ public class UserServiceImpl implements UserService {
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
         return new LoginResponseDTO(true, token, refreshToken);
     }
+
+    @Override
+    @Transactional
+    public LoginResponseDTO changePassword(PasswordChangeDTO passwordChangeDTO, UserContext userContext) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userContext.getEmail(), passwordChangeDTO.getPassword()));
+        var user = userRepository.findByEmail(userContext.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + userContext.getEmail() + "]"));
+        if (IntStream.of(0, passwordChangeDTO.getNewPassword().length() - 1).noneMatch(i -> Character.isDigit(passwordChangeDTO.getNewPassword().charAt(i)))) {
+            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
+        }
+        var passwordHashed = passwordEncoder.encode(passwordChangeDTO.getNewPassword());
+        user.setPasswordHashed(passwordHashed);
+        userRepository.save(user);
+
+        var token = authenticationService.generateToken(user, null);
+        var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
+        return new LoginResponseDTO(true, token, refreshToken);
+    }
+
+
 }
