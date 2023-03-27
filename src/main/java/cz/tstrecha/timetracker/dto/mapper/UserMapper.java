@@ -8,10 +8,12 @@ import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.UserUpdateDTO;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,6 +48,8 @@ public abstract class UserMapper {
     @Mapping(target = "id", source = "contextUser.id")
     @Mapping(target = "email", source = "contextUser.email")
     public abstract LoggedUser toLoggedUser(ContextUserDTO contextUser, UserEntity userEntity);
+
+    public abstract void updateUser(UserUpdateDTO userUpdateDTO, @MappingTarget UserEntity user);
 
     @Named("mapDisplayName")
     protected String mapDisplayName(UserEntity user){

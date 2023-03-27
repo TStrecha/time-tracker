@@ -10,6 +10,7 @@ import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.UserUpdateDTO;
 
 public interface UserService {
 
@@ -50,6 +51,14 @@ public interface UserService {
      * @return
      */
     LoginResponseDTO changeContext(Long id, UserContext userContext);
+
+    /**
+     *
+     * @param userUpdateDTO
+     * @param userContext
+     * @return
+     */
+    UserContext changeUserDetails(UserUpdateDTO userUpdateDTO, UserContext userContext);
 
     /**
      * @param loginRequest

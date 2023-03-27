@@ -9,6 +9,7 @@ import cz.tstrecha.timetracker.dto.PasswordChangeDTO;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
+import cz.tstrecha.timetracker.dto.UserUpdateDTO;
 import cz.tstrecha.timetracker.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,11 @@ public class UserController {
     @GetMapping
     public ResponseEntity<UserContext> loggedUserDetails(@InjectUserContext UserContext user){
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @PutMapping
+    public ResponseEntity<UserContext> changeUserDetails(@RequestBody UserUpdateDTO userUpdateDTO, @InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(userService.changeUserDetails(userUpdateDTO,userContext), HttpStatus.OK);
     }
 
     @PostMapping("/relationship")
