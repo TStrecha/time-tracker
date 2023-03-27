@@ -15,6 +15,7 @@ import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.UserUpdateDTO;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
@@ -163,6 +164,31 @@ public class UserServiceImpl implements UserService {
                 JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token,
                 JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + refreshToken);
     }
+
+    @Override
+    @Transactional
+    public UserContext changeUserDetails(UserUpdateDTO userUpdateDTO, UserContext userContext) {
+        if (userUpdateDTO.getAccountType() == AccountType.PERSON) {
+            if (Strings.isEmpty(userUpdateDTO.getFirstName()) || Strings.isEmpty(userUpdateDTO.getLastName())) {
+                throw new UserInputException("Person has to have first name and last name filled in.",
+                        ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
+                        "UserUpdateDTO");
+            }
+        } else if(userUpdateDTO.getAccountType() == AccountType.COMPANY){
+            if (Strings.isEmpty(userUpdateDTO.getCompanyName())){
+                throw new UserInputException("Company has to have company name filled in.",
+                        ErrorTypeCode.COMPANY_NAME_MISSING,
+                        "UserUpdateDTO");
+            }
+        }
+
+        var user = userRepository.findByEmail(userContext.getEmail()).orElseThrow();
+        userMapper.updateUser(userUpdateDTO, user);
+        userRepository.save(user);
+
+        return userMapper.toContext(user, userContext.getLoggedAs());
+    }
+
 
     @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
