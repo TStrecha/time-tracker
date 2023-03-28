@@ -64,7 +64,7 @@ public class UserController {
 
     @PutMapping("/change-password")
     public ResponseEntity<LoginResponseDTO> changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO,
-                                                           @InjectUserContext UserContext userContext){
+                                                           @InjectUserContext UserContext userContext) {
         return new ResponseEntity<>(userService.changePassword(passwordChangeDTO, userContext), HttpStatus.OK);
     }
 }
