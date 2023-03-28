@@ -76,9 +76,8 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(registrationRequest.getEmail())) {
             throw new UserInputException("User with this email already exists.", ErrorTypeCode.USER_EMAIL_EXISTS, "UserRegistrationRequestDTO");
         }
-        if (IntStream.of(0, registrationRequest.getPassword().length() - 1).noneMatch(i -> Character.isDigit(registrationRequest.getPassword().charAt(i)))) {
-            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "UserRegistrationRequestDTO");
-        }
+
+        validatePassword(registrationRequest.getPassword());
 
         var passwordHashed = passwordEncoder.encode(registrationRequest.getPassword());
         var registeredUser = userMapper.fromRegistrationRequest(registrationRequest, passwordHashed, role);
@@ -167,7 +166,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
-        var user = authenticateUser(loginRequest.getEmail(), loginRequest.getPassword());
+        var user = authenticateAndRetrieveUser(loginRequest.getEmail(), loginRequest.getPassword());
         var token = authenticationService.generateToken(user, null);
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
         return new LoginResponseDTO(true, token, refreshToken);
@@ -176,7 +175,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public LoginResponseDTO changePassword(PasswordChangeDTO passwordChangeDTO, UserContext userContext) {
-        var user = authenticateUser(userContext.getEmail(), passwordChangeDTO.getPassword(), passwordChangeDTO.getNewPassword());
+        var user = authenticateAndRetrieveUser(userContext.getEmail(), passwordChangeDTO.getPassword());
+        validatePassword(passwordChangeDTO.getPassword());
 
         var passwordHashed = passwordEncoder.encode(passwordChangeDTO.getNewPassword());
         user.setPasswordHashed(passwordHashed);
@@ -187,17 +187,16 @@ public class UserServiceImpl implements UserService {
         return new LoginResponseDTO(true, token, refreshToken);
     }
 
-    private UserEntity authenticateUser(String email, String password, String newPassword){
+    private void validatePassword(String password){
+        if (IntStream.of(0, password.length() - 1).noneMatch(i -> Character.isDigit(password.charAt(i)))) {
+            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
+        }
+    }
+
+    private UserEntity authenticateAndRetrieveUser(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + email + "]"));
-        if (IntStream.of(0, newPassword.length() - 1).noneMatch(i -> Character.isDigit(newPassword.charAt(i)))) {
-            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
-        }
         return user;
-    }
-
-    private UserEntity authenticateUser(String email, String password){
-        return authenticateUser(email, password, password);
     }
 }
