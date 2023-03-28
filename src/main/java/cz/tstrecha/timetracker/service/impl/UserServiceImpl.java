@@ -167,7 +167,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
-        var user = validatePassword(loginRequest.getEmail(), loginRequest.getPassword());
+        var user = authenticateUser(loginRequest.getEmail(), loginRequest.getPassword());
         var token = authenticationService.generateToken(user, null);
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
         return new LoginResponseDTO(true, token, refreshToken);
@@ -176,10 +176,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public LoginResponseDTO changePassword(PasswordChangeDTO passwordChangeDTO, UserContext userContext) {
-        var user = validatePassword(userContext.getEmail(), passwordChangeDTO.getPassword());
-        if (IntStream.of(0, passwordChangeDTO.getNewPassword().length() - 1).noneMatch(i -> Character.isDigit(passwordChangeDTO.getNewPassword().charAt(i)))) {
-            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
-        }
+        var user = authenticateUser(userContext.getEmail(), passwordChangeDTO.getPassword(), passwordChangeDTO.getNewPassword());
+
         var passwordHashed = passwordEncoder.encode(passwordChangeDTO.getNewPassword());
         user.setPasswordHashed(passwordHashed);
         userRepository.save(user);
@@ -189,10 +187,17 @@ public class UserServiceImpl implements UserService {
         return new LoginResponseDTO(true, token, refreshToken);
     }
 
-    private UserEntity validatePassword(String email, String password){
+    private UserEntity authenticateUser(String email, String password, String newPassword){
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + email + "]"));
+        if (IntStream.of(0, newPassword.length() - 1).noneMatch(i -> Character.isDigit(newPassword.charAt(i)))) {
+            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
+        }
         return user;
+    }
+
+    private UserEntity authenticateUser(String email, String password){
+        return authenticateUser(email, password, password);
     }
 }
