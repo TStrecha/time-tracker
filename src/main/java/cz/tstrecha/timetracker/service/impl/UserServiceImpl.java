@@ -62,17 +62,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO createUser(UserRegistrationRequestDTO registrationRequest, UserRole role) {
-        if (registrationRequest.getAccountType() == AccountType.PERSON) {
-            if (Strings.isEmpty(registrationRequest.getFirstName()) || Strings.isEmpty(registrationRequest.getLastName())) {
-                throw new UserInputException("Person has to have first name and last name filled in.",
-                        ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
-                        "UserRegistrationRequestDTO");
-            }
-        } else if (registrationRequest.getAccountType() == AccountType.COMPANY) {
-            if (Strings.isEmpty(registrationRequest.getCompanyName())) {
-                throw new UserInputException("Company has to have company name filled in.", ErrorTypeCode.COMPANY_NAME_MISSING, "UserRegistrationRequestDTO");
-            }
-        }
+        validateNames(registrationRequest.getAccountType(),
+                registrationRequest.getFirstName(),
+                registrationRequest.getLastName(),
+                registrationRequest.getCompanyName());
 
         if (userRepository.existsByEmail(registrationRequest.getEmail())) {
             throw new UserInputException("User with this email already exists.", ErrorTypeCode.USER_EMAIL_EXISTS, "UserRegistrationRequestDTO");
@@ -167,35 +160,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserContext changeUserDetails(UserUpdateDTO userUpdateDTO, UserContext userContext) {
-        if (userUpdateDTO.getAccountType() == AccountType.PERSON) {
-            if (Strings.isEmpty(userUpdateDTO.getFirstName()) || Strings.isEmpty(userUpdateDTO.getLastName())) {
-                throw new UserInputException("Person has to have first name and last name filled in.",
-                        ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
-                        "UserUpdateDTO");
-            }
-        } else if(userUpdateDTO.getAccountType() == AccountType.COMPANY){
-            if (Strings.isEmpty(userUpdateDTO.getCompanyName())){
-                throw new UserInputException("Company has to have company name filled in.",
-                        ErrorTypeCode.COMPANY_NAME_MISSING,
-                        "UserUpdateDTO");
-            }
-        }
+    public LoginResponseDTO changeUserDetails(UserUpdateDTO userUpdateDTO, UserContext userContext) {
+        validateNames(userUpdateDTO.getAccountType(),
+                userUpdateDTO.getFirstName(),
+                userUpdateDTO.getLastName(),
+                userUpdateDTO.getCompanyName());
 
         var user = userRepository.findByEmail(userContext.getEmail()).orElseThrow();
         userMapper.updateUser(userUpdateDTO, user);
         userRepository.save(user);
 
-        return userMapper.toContext(user, userContext.getLoggedAs());
+        return generateLoginResponseDTO(user, userContext.getLoggedAs());
     }
-
 
     @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
-        var user = authenticateAndRetrieveUser(loginRequest.getEmail(), loginRequest.getPassword());
-        var token = authenticationService.generateToken(user, null);
-        var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
-        return new LoginResponseDTO(true, token, refreshToken);
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
+        return generateLoginResponseDTO(user, null);
     }
 
     @Override
@@ -210,9 +192,30 @@ public class UserServiceImpl implements UserService {
 
         var token = authenticationService.generateToken(user, userContext.getLoggedAs());
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), userContext.getLoggedAs().getId());
+        return generateLoginResponseDTO(user, userContext.getLoggedAs());
+    }
+
+    private LoginResponseDTO generateLoginResponseDTO(UserEntity user, ContextUserDTO contextUserDTO){
+        var token = authenticationService.generateToken(user, contextUserDTO);
+        var refreshToken = authenticationService.generateRefreshToken(user.getId(), contextUserDTO == null ? user.getId() : contextUserDTO.getId());
         return new LoginResponseDTO(true, token, refreshToken);
     }
 
+    private void validateNames(AccountType accountType, String firstName, String lastName, String companyName){
+        if (accountType == AccountType.PERSON) {
+            if (Strings.isEmpty(firstName) || Strings.isEmpty(lastName)) {
+                throw new UserInputException("Person has to have first name and last name filled in.",
+                        ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
+                        "UserUpdateDTO");
+            }
+        } else if(accountType == AccountType.COMPANY){
+            if (Strings.isEmpty(companyName)){
+                throw new UserInputException("Company has to have company name filled in.",
+                        ErrorTypeCode.COMPANY_NAME_MISSING,
+                        "UserUpdateDTO");
+            }
+        }
+    }
     private void validatePassword(String password){
         if (IntStream.of(0, password.length() - 1).noneMatch(i -> Character.isDigit(password.charAt(i)))) {
             throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
