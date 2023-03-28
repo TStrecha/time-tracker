@@ -215,6 +215,7 @@ public class UserServiceImpl implements UserService {
             }
         }
     }
+
     private void validatePassword(String password){
         if (IntStream.of(0, password.length() - 1).noneMatch(i -> Character.isDigit(password.charAt(i)))) {
             throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
