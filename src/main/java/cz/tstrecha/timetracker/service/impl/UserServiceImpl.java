@@ -20,6 +20,7 @@ import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
 import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.UserSettingsRepository;
+import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import cz.tstrecha.timetracker.repository.entity.UserSettingsEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
@@ -166,8 +167,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-        var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
+        var user = validatePassword(loginRequest.getEmail(), loginRequest.getPassword());
         var token = authenticationService.generateToken(user, null);
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
         return new LoginResponseDTO(true, token, refreshToken);
@@ -176,9 +176,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public LoginResponseDTO changePassword(PasswordChangeDTO passwordChangeDTO, UserContext userContext) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userContext.getEmail(), passwordChangeDTO.getPassword()));
-        var user = userRepository.findByEmail(userContext.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + userContext.getEmail() + "]"));
+        var user = validatePassword(userContext.getEmail(), passwordChangeDTO.getPassword());
         if (IntStream.of(0, passwordChangeDTO.getNewPassword().length() - 1).noneMatch(i -> Character.isDigit(passwordChangeDTO.getNewPassword().charAt(i)))) {
             throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
         }
@@ -186,10 +184,15 @@ public class UserServiceImpl implements UserService {
         user.setPasswordHashed(passwordHashed);
         userRepository.save(user);
 
-        var token = authenticationService.generateToken(user, null);
-        var refreshToken = authenticationService.generateRefreshToken(user.getId(), user.getId());
+        var token = authenticationService.generateToken(user, userContext.getLoggedAs());
+        var refreshToken = authenticationService.generateRefreshToken(user.getId(), userContext.getLoggedAs().getId());
         return new LoginResponseDTO(true, token, refreshToken);
     }
 
-
+    private UserEntity validatePassword(String email, String password){
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + email + "]"));
+        return user;
+    }
 }
