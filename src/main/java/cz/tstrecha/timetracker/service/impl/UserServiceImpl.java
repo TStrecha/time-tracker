@@ -6,6 +6,17 @@ import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
+import cz.tstrecha.timetracker.dto.ContextUserDTO;
+import cz.tstrecha.timetracker.dto.LoggedUser;
+import cz.tstrecha.timetracker.dto.LoginRequestDTO;
+import cz.tstrecha.timetracker.dto.LoginResponseDTO;
+import cz.tstrecha.timetracker.dto.PasswordChangeDTO;
+import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
+import cz.tstrecha.timetracker.dto.RelationshipDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
+import cz.tstrecha.timetracker.dto.UserDTO;
+import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.UserUpdateDTO;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
@@ -190,8 +201,6 @@ public class UserServiceImpl implements UserService {
         user.setPasswordHashed(passwordHashed);
         userRepository.save(user);
 
-        var token = authenticationService.generateToken(user, userContext.getLoggedAs());
-        var refreshToken = authenticationService.generateRefreshToken(user.getId(), userContext.getLoggedAs().getId());
         return generateLoginResponseDTO(user, userContext.getLoggedAs());
     }
 
