@@ -42,8 +42,8 @@ public class UserController {
     }
 
     @PutMapping
-    public ResponseEntity<UserContext> changeUserDetails(@RequestBody UserUpdateDTO userUpdateDTO, @InjectUserContext UserContext userContext){
-        return new ResponseEntity<>(userService.changeUserDetails(userUpdateDTO,userContext), HttpStatus.OK);
+    public ResponseEntity<LoginResponseDTO> changeUserDetails(@RequestBody UserUpdateDTO userUpdateDTO, @InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(userService.changeUserDetails(userUpdateDTO, userContext), HttpStatus.OK);
     }
 
     @PostMapping("/relationship")

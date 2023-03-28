@@ -58,7 +58,7 @@ public interface UserService {
      * @param userContext
      * @return
      */
-    UserContext changeUserDetails(UserUpdateDTO userUpdateDTO, UserContext userContext);
+    LoginResponseDTO changeUserDetails(UserUpdateDTO userUpdateDTO, UserContext userContext);
 
     /**
      * @param loginRequest
