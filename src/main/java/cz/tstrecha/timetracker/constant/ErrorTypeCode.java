@@ -16,6 +16,8 @@ public enum ErrorTypeCode {
     TASK_NOT_FOUND_BY_ID("TaskNotFoundById"),
     TASK_ISNT_ACTIVE("TaskIsntActive"),
     TASK_ALREADY_DONE("TaskAlreadyDone"),
+    VALID_FROM_AFTER_VALID_TO("ValidFromIsAfterValidTo"),
+    INTERSECTS_WITH_OTHER_SETTINGS("SettingIntersects"),
     USER_DOESNT_HAVE_ALL_PERMISSIONS("UserDoesntHaveAllPermissions"),
     USER_DOESNT_HAVE_ONE_PERMISSION("UserDoesntHaveOnePermission"),
     USER_DOESNT_HAVE_REQUIRED_PERMISSIONS("UserDoesntHaveRequiredPermissions"),
