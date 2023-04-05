@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface SettingsMapper {
+
     SettingsCreateUpdateDTO toDTO(UserSettingsEntity source);
 
     @Mapping(target = "id", source = "source.id")
