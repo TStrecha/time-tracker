@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SettingsCreateUpdateDTO {
+
     private long id;
 
     private LocalDate validFrom;

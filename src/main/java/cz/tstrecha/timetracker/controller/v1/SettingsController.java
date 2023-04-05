@@ -30,6 +30,6 @@ public class SettingsController {
     @PostMapping
     public ResponseEntity<SettingsCreateUpdateDTO> createUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
                                                                      @InjectLoggedUser LoggedUser loggedUser){
-        return new ResponseEntity<>(settingsService.createSetting(setting, loggedUser), HttpStatus.OK);
+        return new ResponseEntity<>(settingsService.createSetting(setting, loggedUser), HttpStatus.CREATED);
     }
 }
