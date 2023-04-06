@@ -20,7 +20,7 @@ public enum ErrorTypeCode {
     INTERSECTS_WITH_OTHER_SETTINGS("SettingIntersects"),
     SETTING_NOT_FOUND_BY_ID("SettingNotFoundById"),
     SETTING_NO_LONGER_VALID("SettingNoLongerValid"),
-    SETTING_HAS_SAME_NAME("SettingHasSameName"),
+    SETTINGS_NAME_NOT_UNIQUE("SettingsNameNotUnique"),
     USER_DOESNT_HAVE_ALL_PERMISSIONS("UserDoesntHaveAllPermissions"),
     USER_DOESNT_HAVE_ONE_PERMISSION("UserDoesntHaveOnePermission"),
     USER_DOESNT_HAVE_REQUIRED_PERMISSIONS("UserDoesntHaveRequiredPermissions"),
