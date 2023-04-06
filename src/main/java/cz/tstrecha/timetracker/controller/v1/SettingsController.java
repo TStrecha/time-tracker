@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,5 +32,11 @@ public class SettingsController {
     public ResponseEntity<SettingsCreateUpdateDTO> createUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
                                                                      @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(settingsService.createSetting(setting, loggedUser), HttpStatus.CREATED);
+    }
+
+    @PutMapping
+    public ResponseEntity<SettingsCreateUpdateDTO> updateUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
+                                                                     @InjectLoggedUser LoggedUser loggedUser){
+        return new ResponseEntity<>(settingsService.updateSetting(setting, loggedUser), HttpStatus.OK);
     }
 }

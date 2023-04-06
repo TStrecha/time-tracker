@@ -6,9 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserSettingsRepository extends JpaRepository<UserSettingsEntity, Long> {
 
     @Query("SELECT us FROM UserSettings us WHERE us.user = :user AND (us.validTo IS NULL OR us.validTo > NOW())")
     List<UserSettingsEntity> findActiveUserSettings(UserEntity user);
+
+    boolean existsByUserAndNameAndIdIsNot(UserEntity user, String name, Long id);
+
+    Optional<UserSettingsEntity> findByIdAndUser(Long id, UserEntity user);
 }
