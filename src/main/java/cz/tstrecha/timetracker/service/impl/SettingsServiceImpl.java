@@ -28,6 +28,10 @@ public class SettingsServiceImpl implements SettingsService {
             throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, "SettingsCreateUpdateDTO");
         }
 
+        if (userSettingsRepository.existsByUserAndNameAndIdIsNot(user.getUserEntity(), settingsCreateUpdateDTO.getName(), settingsCreateUpdateDTO.getId())){
+            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTINGS_NAME_NOT_UNIQUE, "SettingsCreateUpdateDTO");
+        }
+
         userSettingsRepository.findActiveUserSettings(user.getUserEntity())
             .forEach(setting -> {
                 if (setting.getValidTo() == null){
@@ -59,7 +63,7 @@ public class SettingsServiceImpl implements SettingsService {
         }
 
         if (userSettingsRepository.existsByUserAndNameAndIdIsNot(user.getUserEntity(), settingsCreateUpdateDTO.getName(), settingsCreateUpdateDTO.getId())){
-            throw new UserInputException("Settings cannot have same name.", ErrorTypeCode.SETTING_HAS_SAME_NAME, "SettingsCreateUpdateDTO");
+            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTINGS_NAME_NOT_UNIQUE, "SettingsCreateUpdateDTO");
         }
 
         settingsMapper.updateSetting(settingsCreateUpdateDTO, setting);
@@ -68,6 +72,4 @@ public class SettingsServiceImpl implements SettingsService {
 
         return settingsMapper.toDTO(setting);
     }
-
-
 }

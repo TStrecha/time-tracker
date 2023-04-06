@@ -1,6 +1,7 @@
 package cz.tstrecha.timetracker.controller.v1;
 
 import cz.tstrecha.timetracker.annotation.InjectLoggedUser;
+import cz.tstrecha.timetracker.annotation.PermissionCheck;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.SettingsCreateUpdateDTO;
@@ -29,12 +30,14 @@ public class SettingsController {
     private final SettingsService settingsService;
 
     @PostMapping
+    @PermissionCheck("settings.create")
     public ResponseEntity<SettingsCreateUpdateDTO> createUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
                                                                      @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(settingsService.createSetting(setting, loggedUser), HttpStatus.CREATED);
     }
 
     @PutMapping
+    @PermissionCheck("settings.create")
     public ResponseEntity<SettingsCreateUpdateDTO> updateUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
                                                                      @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(settingsService.updateSetting(setting, loggedUser), HttpStatus.OK);
