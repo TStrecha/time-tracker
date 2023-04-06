@@ -11,6 +11,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class SettingsServiceImpl implements SettingsService {
@@ -41,4 +43,31 @@ public class SettingsServiceImpl implements SettingsService {
 
         return settingsMapper.toDTO(newSetting);
     }
+
+    @Override
+    @Transactional
+    public SettingsCreateUpdateDTO updateSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user) {
+        var setting = userSettingsRepository.findByIdAndUser(settingsCreateUpdateDTO.getId(), user.getUserEntity())
+                .orElseThrow(() -> new UserInputException("Setting not found by id", ErrorTypeCode.SETTING_NOT_FOUND_BY_ID, "SettingsCreateUpdateDTO"));
+
+        if (setting.getValidTo() != null && setting.getValidTo().isBefore(LocalDate.now())){
+            throw new UserInputException("You cannot change no longer valid settings.", ErrorTypeCode.SETTING_NO_LONGER_VALID, "SettingsCreateUpdateDTO");
+        }
+
+        if (settingsCreateUpdateDTO.getValidTo() != null && settingsCreateUpdateDTO.getValidTo().isBefore(setting.getValidFrom())){
+            throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, "SettingsCreateUpdateDTO");
+        }
+
+        if (userSettingsRepository.existsByUserAndNameAndIdIsNot(user.getUserEntity(), settingsCreateUpdateDTO.getName(), settingsCreateUpdateDTO.getId())){
+            throw new UserInputException("Settings cannot have same name.", ErrorTypeCode.SETTING_HAS_SAME_NAME, "SettingsCreateUpdateDTO");
+        }
+
+        settingsMapper.updateSetting(settingsCreateUpdateDTO, setting);
+
+        userSettingsRepository.save(setting);
+
+        return settingsMapper.toDTO(setting);
+    }
+
+
 }

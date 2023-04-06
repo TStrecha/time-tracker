@@ -12,4 +12,12 @@ public interface SettingsService {
      * @return
      */
     SettingsCreateUpdateDTO createSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user);
+
+    /**
+     *
+     * @param settingsCreateUpdateDTO
+     * @param user
+     * @return
+     */
+    SettingsCreateUpdateDTO updateSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user);
 }
