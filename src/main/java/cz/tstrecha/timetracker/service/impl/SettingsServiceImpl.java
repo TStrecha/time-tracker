@@ -28,7 +28,7 @@ public class SettingsServiceImpl implements SettingsService {
             throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, "SettingsCreateUpdateDTO");
         }
 
-        if (userSettingsRepository.existsByUserAndNameAndIdIsNot(user.getUserEntity(), settingsCreateUpdateDTO.getName(), settingsCreateUpdateDTO.getId())){
+        if (userSettingsRepository.existsByUserAndNameAndIdIsNot(user.getUserEntity(), settingsCreateUpdateDTO.getName(), null)){
             throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTINGS_NAME_NOT_UNIQUE, "SettingsCreateUpdateDTO");
         }
 
