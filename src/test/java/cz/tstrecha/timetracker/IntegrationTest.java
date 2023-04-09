@@ -8,6 +8,7 @@ import cz.tstrecha.timetracker.repository.TaskRepository;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
 import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.UserSettingsRepository;
+import cz.tstrecha.timetracker.service.AuthenticationService;
 import cz.tstrecha.timetracker.service.TransactionRunner;
 import cz.tstrecha.timetracker.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +58,9 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected UserService userService;
+
+    @Autowired
+    protected AuthenticationService authenticationService;
 
     @BeforeEach
     public void init(){

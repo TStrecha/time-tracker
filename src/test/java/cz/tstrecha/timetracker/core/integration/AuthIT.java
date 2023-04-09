@@ -4,6 +4,7 @@ import cz.tstrecha.timetracker.IntegrationTest;
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.Constants;
+import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.constant.SecretMode;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
@@ -170,7 +171,10 @@ public class AuthIT extends IntegrationTest {
         userService.createUser(request, UserRole.USER);
 
         var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals(ErrorTypeCode.USER_EMAIL_EXISTS, exception.getErrorTypeCode());
+        Assertions.assertEquals("UserRegistrationRequestDTO", exception.getEntityType());
         Assertions.assertEquals("User with this email already exists.", exception.getMessage());
+        Assertions.assertNotNull(exception.getLocalizedMessage());
     }
 
     @Test
@@ -181,7 +185,10 @@ public class AuthIT extends IntegrationTest {
         request.setAccountType(AccountType.COMPANY);
 
         var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals(ErrorTypeCode.COMPANY_NAME_MISSING, exception.getErrorTypeCode());
+        Assertions.assertEquals("UserUpdateDTO", exception.getEntityType());
         Assertions.assertEquals("Company has to have company name filled in.", exception.getMessage());
+        Assertions.assertNotNull(exception.getLocalizedMessage());
     }
 
     @Test
@@ -193,16 +200,25 @@ public class AuthIT extends IntegrationTest {
         request.setLastName(null);
 
         var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals(ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING, exception.getErrorTypeCode());
+        Assertions.assertEquals("UserUpdateDTO", exception.getEntityType());
         Assertions.assertEquals("Person has to have first name and last name filled in.", exception.getMessage());
+        Assertions.assertNotNull(exception.getLocalizedMessage());
 
         request.setFirstName("Test");
         exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals(ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING, exception.getErrorTypeCode());
+        Assertions.assertEquals("UserUpdateDTO", exception.getEntityType());
         Assertions.assertEquals("Person has to have first name and last name filled in.", exception.getMessage());
+        Assertions.assertNotNull(exception.getLocalizedMessage());
 
         request.setFirstName(null);
         request.setLastName("");
         exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals(ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING, exception.getErrorTypeCode());
+        Assertions.assertEquals("UserUpdateDTO", exception.getEntityType());
         Assertions.assertEquals("Person has to have first name and last name filled in.", exception.getMessage());
+        Assertions.assertNotNull(exception.getLocalizedMessage());
     }
     @Test
     @SneakyThrows
@@ -212,7 +228,10 @@ public class AuthIT extends IntegrationTest {
         request.setPassword("test");
 
         var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
+        Assertions.assertEquals(ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, exception.getErrorTypeCode());
+        Assertions.assertEquals("PasswordChangeDTO", exception.getEntityType());
         Assertions.assertEquals("Password should contain at least 1 digit.", exception.getMessage());
+        Assertions.assertNotNull(exception.getLocalizedMessage());
     }
 
     @Test

@@ -5,6 +5,7 @@ import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
+import cz.tstrecha.timetracker.dto.InternalErrorDTO;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
@@ -24,9 +25,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 public class RelationshipIT extends IntegrationTest {
-
-    @Autowired
-    private AuthenticationService authenticationService;
 
     @Autowired
     private RelationshipMapper relationshipMapper;
@@ -73,7 +71,7 @@ public class RelationshipIT extends IntegrationTest {
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
 
-        mvc.perform(
+        var response = mvc.perform(
                     post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .content(objectMapper.writeValueAsString(request))
@@ -83,6 +81,12 @@ public class RelationshipIT extends IntegrationTest {
             .andExpect(MockMvcResultMatchers.status().isForbidden())
             .andReturn()
             .getResponse();
+
+        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
+        Assertions.assertEquals("PermissionException", exceptionDTO.getException());
+        Assertions.assertEquals("You can only create relationship for yourself.", exceptionDTO.getExceptionMessage());
+        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
+        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
     @Test
@@ -107,7 +111,7 @@ public class RelationshipIT extends IntegrationTest {
                 .andReturn()
                 .getResponse();
 
-        mvc.perform(
+        var response = mvc.perform(
                         post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
@@ -117,6 +121,12 @@ public class RelationshipIT extends IntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
                 .andReturn()
                 .getResponse();
+
+        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
+        Assertions.assertEquals("UserInputException", exceptionDTO.getException());
+        Assertions.assertEquals("Relationship already exists", exceptionDTO.getExceptionMessage());
+        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
+        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
     @Test
@@ -130,7 +140,7 @@ public class RelationshipIT extends IntegrationTest {
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
 
-        mvc.perform(
+        var response = mvc.perform(
                         post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
@@ -140,6 +150,12 @@ public class RelationshipIT extends IntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn()
                 .getResponse();
+
+        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
+        Assertions.assertEquals("PermissionException", exceptionDTO.getException());
+        Assertions.assertEquals("You can only create relationship for yourself.", exceptionDTO.getExceptionMessage());
+        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
+        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
     @Test
@@ -204,7 +220,7 @@ public class RelationshipIT extends IntegrationTest {
         request.setPermissions(List.of("report.read"));
         request.setSecureValues(true);
 
-        mvc.perform(
+        var response = mvc.perform(
                         put(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
@@ -213,6 +229,12 @@ public class RelationshipIT extends IntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
                 .andReturn()
                 .getResponse();
+
+        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
+        Assertions.assertEquals("UserInputException", exceptionDTO.getException());
+        Assertions.assertEquals("You cannot edit a relationship between other users", exceptionDTO.getExceptionMessage());
+        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
+        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
     private String getDisplayName(UserEntity user){
