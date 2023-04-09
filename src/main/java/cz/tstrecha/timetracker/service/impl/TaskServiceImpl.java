@@ -45,9 +45,13 @@ public class TaskServiceImpl implements TaskService {
         var taskEntity = new TaskEntity();
         taskEntity.setUser(loggedUser.getUserEntity());
         switch (identifierType) {
-            case NAME -> taskEntity.setName(identifierValue);
+            case NAME -> {
+                taskEntity.setName(identifierValue);
+                taskEntity.setNameSimple(StringUtils.stripAccents(identifierValue));
+            }
             case CUSTOM_ID -> taskEntity.setCustomId(Long.valueOf(identifierValue));
         }
+        taskEntity.setStatus(TaskStatus.NEW);
         taskEntity = taskRepository.save(taskEntity);
         return taskMapper.toDTO(taskEntity);
     }
