@@ -516,7 +516,6 @@ public class TaskIT extends IntegrationTest {
         Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
-
     private TaskCreateRequestDTO createTaskRequest() {
         var request = new TaskCreateRequestDTO();
         request.setId(0L);
