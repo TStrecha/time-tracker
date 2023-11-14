@@ -62,6 +62,7 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpec
             case ACTIVE -> value.equalsIgnoreCase("true") ?
                     cb.isTrue(root.get(TaskEntity_.ACTIVE)) :
                     cb.isFalse(root.get(TaskEntity_.ACTIVE));
+            default -> cb.equal(root.get(TaskEntity_.ID), value);
         };
     }
 }
