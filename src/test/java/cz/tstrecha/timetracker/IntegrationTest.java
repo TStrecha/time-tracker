@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
+import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.TaskRepository;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
 import cz.tstrecha.timetracker.repository.UserRepository;
@@ -26,7 +27,6 @@ import java.util.stream.IntStream;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ActiveProfiles("test")
 public abstract class IntegrationTest {
 
@@ -40,6 +40,9 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected UserMapper userMapper;
 
     @Autowired
     protected TransactionTemplate transactionTemplate;
