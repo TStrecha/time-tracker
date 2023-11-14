@@ -13,7 +13,8 @@ public enum TaskField {
     DESCRIPTION("description"),
     STATUS("status"),
     ESTIMATE("estimate"),
-    ACTIVE("active");
+    ACTIVE("active"),
+    UPDATED_AT("updatedAt");
 
     @Getter
     private final String fieldName;
