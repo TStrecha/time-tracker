@@ -27,6 +27,5 @@ public class AppConfig {
         private Duration refreshTokenDuration;
         private String secretKey;
         private SignatureAlgorithm signatureAlgorithm;
-
     }
 }

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
-@Tag(name = "user-api")
+@Tag(name = "settings-api")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "settings", produces = {APPLICATION_JSON_VALUE})

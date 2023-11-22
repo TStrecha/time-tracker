@@ -7,7 +7,6 @@ import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
-import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
 import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
@@ -34,8 +33,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private static final String AUTHORIZED_AS_USER_CLAIM_KEY = "authorizedAsUserId";
 
     private final UserMapper userMapper;
-
-    private final UserRelationshipRepository userRelationshipRepository;
 
     private final UserRepository userRepository;
 
@@ -113,7 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var userRelationship = user.getUserRelationshipReceiving().stream()
                 .filter(relation -> relation.getFrom().getId().equals(authorizedAsUserId))
                 .findFirst()
-                .orElseThrow(() -> new PermissionException("User doesn't have permission to change context to id [" + authorizedAsUserId + "]", ErrorTypeCode.USER_DOESNT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
+                .orElseThrow(() -> new PermissionException("User doesn't have permission to change context to id [" + authorizedAsUserId + "]", ErrorTypeCode.USER_DOES_NOT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
 
         return generateToken(user, userMapper.userRelationshipEntityToContextUserDTO(userRelationship));
     }

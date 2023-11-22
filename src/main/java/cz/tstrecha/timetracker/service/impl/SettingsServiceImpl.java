@@ -29,7 +29,7 @@ public class SettingsServiceImpl implements SettingsService {
         }
 
         if (userSettingsRepository.existsByUserAndName(user.getUserEntity(), settingsCreateUpdateDTO.getName())){
-            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTINGS_NAME_NOT_UNIQUE, "SettingsCreateUpdateDTO");
+            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, "SettingsCreateUpdateDTO");
         }
 
         userSettingsRepository.findActiveUserSettings(user.getUserEntity())
@@ -63,7 +63,7 @@ public class SettingsServiceImpl implements SettingsService {
         }
 
         if (userSettingsRepository.existsByUserAndNameAndIdIsNot(user.getUserEntity(), settingsCreateUpdateDTO.getName(), settingsCreateUpdateDTO.getId())){
-            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTINGS_NAME_NOT_UNIQUE, "SettingsCreateUpdateDTO");
+            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, "SettingsCreateUpdateDTO");
         }
 
         settingsMapper.updateSetting(settingsCreateUpdateDTO, setting);

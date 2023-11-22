@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
-            throw new PermissionException("You can only create relationship for yourself.", ErrorTypeCode.USER_ATTEMPTS_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
+            throw new PermissionException("You can only create relationship for yourself.", ErrorTypeCode.ATTEMPTED_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
         }
         return transactionRunner.runInNewTransaction(() -> createRelationship(request));
     }
@@ -125,11 +125,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
-            throw new PermissionException("You can only edit your relationships.",ErrorTypeCode.USER_ATTEMPTS_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
+            throw new PermissionException("You can only edit your relationships.",ErrorTypeCode.ATTEMPTED_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
         }
         if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
             throw new UserInputException("You cannot edit a relationship between other users",
-                    ErrorTypeCode.REALTIONSHIP_EDIT_WITHOUT_PERMISSION,
+                    ErrorTypeCode.RELATIONSHIP_EDIT_WITHOUT_PERMISSION,
                     "RelationshipCreateUpdateRequestDTO");
         }
 
@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
                 .filter(relation -> relation.getActiveFrom().isBefore(OffsetDateTime.now()) &&
                         (relation.getActiveTo() == null || relation.getActiveTo().isAfter(OffsetDateTime.now())))
                 .findFirst()
-                .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]", ErrorTypeCode.USER_DOESNT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
+                .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]", ErrorTypeCode.USER_DOES_NOT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
 
         var userEntity = userRepository.findById(userContext.getId()).orElseThrow();
 
@@ -218,7 +218,7 @@ public class UserServiceImpl implements UserService {
 
     private void validatePassword(String password){
         if (IntStream.of(0, password.length() - 1).noneMatch(i -> Character.isDigit(password.charAt(i)))) {
-            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, "PasswordChangeDTO");
+            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOES_NOT_CONTAIN_DIGIT, "PasswordChangeDTO");
         }
     }
 

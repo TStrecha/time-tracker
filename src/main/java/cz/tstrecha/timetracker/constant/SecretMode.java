@@ -5,5 +5,4 @@ public enum SecretMode {
     NONE,
     PARTIAL,
     HIDDEN,
-
 }

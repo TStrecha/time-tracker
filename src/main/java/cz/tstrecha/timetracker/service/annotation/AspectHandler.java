@@ -20,18 +20,18 @@ import java.util.Map;
 
 @Aspect
 @Component
-public class AspectClass {
+public class AspectHandler {
 
     @Before("@annotation(checks)")
     public void handlePermissionChecks(JoinPoint jp, PermissionChecks checks) {
         var context = ContextUtils.retrieveContextMandatory();
         if (checks.operation() == PermissionCheckOperation.AND) {
             if (!Arrays.stream(checks.value()).allMatch(permission -> ContextUtils.hasPermissions(context, permission.value()))) {
-                throw new PermissionException("User context doesn't have all required permissions.", ErrorTypeCode.USER_DOESNT_HAVE_ALL_PERMISSIONS);
+                throw new PermissionException("User context doesn't have all required permissions.", ErrorTypeCode.USER_DOES_NOT_HAVE_ALL_PERMISSIONS);
             }
         } else { // PermissionCheckOperation.OR
             if (Arrays.stream(checks.value()).noneMatch(permission -> ContextUtils.hasPermissions(context, permission.value()))) {
-                throw new PermissionException("User context doesn't have one of the required permissions.", ErrorTypeCode.USER_DOESNT_HAVE_ONE_PERMISSION);
+                throw new PermissionException("User context doesn't have one of the required permissions.", ErrorTypeCode.USER_DOES_NOT_HAVE_ONE_PERMISSION);
             }
         }
     }
@@ -40,7 +40,7 @@ public class AspectClass {
     public void handlePermissionChecks(JoinPoint jp, PermissionCheck check) {
         var context = ContextUtils.retrieveContextMandatory();
         if (!ContextUtils.hasPermissions(context, check.value())) {
-            throw new PermissionException("User context doesn't have the required permission.", ErrorTypeCode.USER_DOESNT_HAVE_REQUIRED_PERMISSIONS);
+            throw new PermissionException("User context doesn't have the required permission.", ErrorTypeCode.USER_DOES_NOT_HAVE_REQUIRED_PERMISSIONS);
         }
     }
 

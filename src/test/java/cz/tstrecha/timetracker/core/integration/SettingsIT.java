@@ -93,7 +93,7 @@ public class SettingsIT extends IntegrationTest {
         settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
         var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
 
-        assertEquals(ErrorTypeCode.SETTINGS_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
+        assertEquals(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
         assertEquals("There is already a setting with this name.", exception.getMessage());
         assertNotNull(exception.getLocalizedMessage());
@@ -262,7 +262,7 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker1");
         var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
 
-        assertEquals(ErrorTypeCode.SETTINGS_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
+        assertEquals(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
         assertEquals("There is already a setting with this name.", exception.getMessage());
         assertNotNull(exception.getLocalizedMessage());

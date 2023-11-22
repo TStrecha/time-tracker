@@ -1,7 +1,7 @@
-package cz.tstrecha.timetracker.dto;
+package cz.tstrecha.timetracker.dto.filter;
 
 import cz.tstrecha.timetracker.constant.SortDirection;
-import cz.tstrecha.timetracker.constant.TaskField;
+import cz.tstrecha.timetracker.constant.TaskFilterField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,9 +12,9 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskFilter {
-    private Map<TaskField, String> fieldFilters;
+    private Map<TaskFilterField, String> fieldFilters;
 
-    private TaskField sort = TaskField.ID;
+    private TaskFilterField sort = TaskFilterField.ID;
 
     private SortDirection sortDirection;
 
