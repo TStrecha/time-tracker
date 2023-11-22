@@ -21,13 +21,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public abstract class IntegrationTest {
 
     private final static String USER_EMAIL = "test@case.";

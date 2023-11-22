@@ -9,7 +9,7 @@ import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
-import cz.tstrecha.timetracker.dto.TaskFilter;
+import cz.tstrecha.timetracker.dto.filter.TaskFilter;
 import cz.tstrecha.timetracker.dto.mapper.TaskMapper;
 import cz.tstrecha.timetracker.repository.TaskRepository;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity;
@@ -17,6 +17,7 @@ import cz.tstrecha.timetracker.service.TaskService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,7 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new UserInputException("Cannot find task with id[" + taskRequest.getId() + "]",
                         ErrorTypeCode.TASK_NOT_FOUND_BY_ID, "TaskCreateRequestDTO"));
         if (!taskEntity.isActive()){
-            throw new IllegalEntityStateException("Task is not active", ErrorTypeCode.TASK_ISNT_ACTIVE, "TaskCreateRequestDTO");
+            throw new IllegalEntityStateException("Task is not active", ErrorTypeCode.TASK_IS_NOT_ACTIVE, "TaskCreateRequestDTO");
         }
         if (taskEntity.getStatus().equals(TaskStatus.DONE)){
             throw new IllegalEntityStateException("Task is already done", ErrorTypeCode.TASK_ALREADY_DONE, "TaskCreateRequestDTO");
@@ -80,7 +81,7 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new UserInputException("Cannot find task with id[" + id + "]",
                         ErrorTypeCode.TASK_NOT_FOUND_BY_ID, "TaskCreateRequestDTO"));
         if (!taskEntity.isActive()){
-            throw new IllegalEntityStateException("Task is not active", ErrorTypeCode.TASK_ISNT_ACTIVE, "TaskCreateRequestDTO");
+            throw new IllegalEntityStateException("Task is not active", ErrorTypeCode.TASK_IS_NOT_ACTIVE, "TaskCreateRequestDTO");
         }
         taskEntity.setStatus(taskStatus);
         taskRepository.save(taskEntity);
@@ -122,11 +123,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public List<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser) {
-        var enumValue = Sort.Direction.valueOf(taskFilter.getSortDirection().name());
-        var sort = Sort.by(enumValue, taskFilter.getSort().getFieldName());
+    public Page<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser) {
+        var sortDirection = Sort.Direction.valueOf(taskFilter.getSortDirection().name());
+        var sort = Sort.by(sortDirection, taskFilter.getSort().getFieldName());
 
         var pageable = PageRequest.of(taskFilter.getPageNumber(), taskFilter.getRows(), sort);
-        return taskRepository.findByFilter(taskFilter, pageable, loggedUser).stream().map(taskMapper::toDTO).toList();
+        return taskRepository.findByFilter(taskFilter, pageable, loggedUser).map(taskMapper::toDTO);
     }
 }

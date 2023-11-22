@@ -4,5 +4,4 @@ public enum PermissionCheckOperation {
 
     AND,
     OR
-
 }

@@ -228,7 +228,7 @@ public class AuthIT extends IntegrationTest {
         request.setPassword("test");
 
         var exception = Assertions.assertThrows(UserInputException.class, () -> userService.createUser(request, UserRole.USER));
-        Assertions.assertEquals(ErrorTypeCode.PASSWORD_DOESNT_CONTAIN_DIGIT, exception.getErrorTypeCode());
+        Assertions.assertEquals(ErrorTypeCode.PASSWORD_DOES_NOT_CONTAIN_DIGIT, exception.getErrorTypeCode());
         Assertions.assertEquals("PasswordChangeDTO", exception.getEntityType());
         Assertions.assertEquals("Password should contain at least 1 digit.", exception.getMessage());
         Assertions.assertNotNull(exception.getLocalizedMessage());

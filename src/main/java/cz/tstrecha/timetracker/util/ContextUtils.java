@@ -45,7 +45,7 @@ public class ContextUtils {
             return true;
         }
         if (!permission.contains(".") || !requiredPermission.contains(".")) {
-            throw new PermissionException("Permission or required permission didn't match required pattern: [module.action]", ErrorTypeCode.PERMISSION_DIDNT_MATCH_REQUIRED_PATTERN);
+            throw new PermissionException("Permission or required permission didn't match required pattern: [module.action]", ErrorTypeCode.PERMISSION_DID_NOT_MATCH_REQUIRED_PATTERN);
         }
         String[] splitPermission = permission.split("\\.");
         String permissionModulePart = splitPermission[0];

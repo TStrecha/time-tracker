@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public enum TaskField {
+public enum TaskFilterField {
 
     ID("id"),
     CUSTOM_ID("customId"),
@@ -14,6 +14,7 @@ public enum TaskField {
     STATUS("status"),
     ESTIMATE("estimate"),
     ACTIVE("active"),
+    CREATED_AT("updatedAt"),
     UPDATED_AT("updatedAt");
 
     @Getter

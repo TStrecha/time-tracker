@@ -9,5 +9,4 @@ import java.lang.annotation.RetentionPolicy;
 public @interface PermissionCheck {
 
     String value();
-
 }

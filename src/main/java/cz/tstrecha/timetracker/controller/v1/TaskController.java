@@ -8,11 +8,12 @@ import cz.tstrecha.timetracker.constant.TaskStatus;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
-import cz.tstrecha.timetracker.dto.TaskFilter;
+import cz.tstrecha.timetracker.dto.filter.TaskFilter;
 import cz.tstrecha.timetracker.service.TaskService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -88,7 +89,7 @@ public class TaskController {
 
     @PostMapping("/list")
     @PermissionCheck("task.read")
-    public ResponseEntity<List<TaskDTO>> listTasks(@RequestBody TaskFilter taskFilter, @InjectLoggedUser LoggedUser loggedUser){
+    public ResponseEntity<Page<TaskDTO>> listTasks(@RequestBody TaskFilter taskFilter, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.listTasks(taskFilter, loggedUser), HttpStatus.OK);
     }
 }

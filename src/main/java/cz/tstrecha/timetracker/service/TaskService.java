@@ -5,7 +5,8 @@ import cz.tstrecha.timetracker.constant.TaskStatus;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
-import cz.tstrecha.timetracker.dto.TaskFilter;
+import cz.tstrecha.timetracker.dto.filter.TaskFilter;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -75,5 +76,5 @@ public interface TaskService {
      * @param loggedUser
      * @return
      */
-    List<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser);
+    Page<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser);
 }
