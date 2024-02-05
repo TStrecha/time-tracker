@@ -14,8 +14,7 @@ public class ContextUtils {
 
     public Optional<UserContext> retrieveContext() {
         var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(principal instanceof UserContext){
-            var context = (UserContext) principal;
+        if(principal instanceof UserContext context){
             return Optional.of(context);
         }
         return Optional.empty();

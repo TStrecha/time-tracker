@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tstrecha.timetracker.config.AppConfig;
 import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
+import cz.tstrecha.timetracker.controller.exception.UnauthorizedException;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
@@ -11,8 +12,10 @@ import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.jackson.io.JacksonSerializer;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
@@ -103,7 +106,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         
         var userId = claims.get(USER_ID_CLAIM_KEY, Long.class);
-        var authorizedAsUserId =  claims.get(AUTHORIZED_AS_USER_CLAIM_KEY, Long.class);
+        var authorizedAsUserId = claims.get(AUTHORIZED_AS_USER_CLAIM_KEY, Long.class);
 
         var user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + userId + "]"));
 
@@ -117,11 +120,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Claims extractClaims(String authToken){
-        var signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(appConfig.getAuth().getSecretKey()));
-        return Jwts.parserBuilder()
-                .setSigningKey(signInKey)
-                .build()
-                .parseClaimsJws(authToken)
-                .getBody();
+        try {
+            var signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(appConfig.getAuth().getSecretKey()));
+            return Jwts.parserBuilder()
+                    .setSigningKey(signInKey)
+                    .build()
+                    .parseClaimsJws(authToken)
+                    .getBody();
+        } catch (ExpiredJwtException | DecodingException jwtException) {
+            throw new UnauthorizedException("Authorization token has expired.", ErrorTypeCode.AUTH_TOKEN_EXPIRED);
+        }
     }
 }

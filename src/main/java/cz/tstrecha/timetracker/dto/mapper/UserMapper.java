@@ -34,19 +34,22 @@ public abstract class UserMapper {
 
     @Mapping(target = "id", source = "user.id")
     @Mapping(target = "email", source = "user.email")
-    @Mapping(target = "relationshipsReceiving", source = "user.userRelationshipReceiving")
-    @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "relationshipsReceiving", source = "user.activeRelationshipsReceiving")
     @Mapping(target = "fullName", source = "user", qualifiedByName = "mapDisplayName")
     @Mapping(target = "activePermissions", expression = "java(mapActivePermissions(user, loggedAs))")
+    @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "activeRelationshipsReceiving", ignore = true)
     public abstract UserContext toContext(UserEntity user, ContextUserDTO loggedAs);
 
     @Mapping(target = "id", source = "from.id")
     @Mapping(target = "fullName", source = "from", qualifiedByName = "mapDisplayName")
     @Mapping(target = "email", source = "from.email")
+    @Mapping(target = "accountType", source = "from.accountType")
     public abstract ContextUserDTO userRelationshipEntityToContextUserDTO(UserRelationshipEntity relationship);
 
     @Mapping(target = "id", source = "contextUser.id")
     @Mapping(target = "email", source = "contextUser.email")
+    @Mapping(target = "accountType", source = "contextUser.accountType")
     public abstract LoggedUser toLoggedUser(ContextUserDTO contextUser, UserEntity userEntity);
 
     public abstract void updateUser(UserUpdateDTO userUpdateDTO, @MappingTarget UserEntity user);
