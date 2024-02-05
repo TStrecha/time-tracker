@@ -2,7 +2,6 @@ package cz.tstrecha.timetracker.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tstrecha.timetracker.constant.UserRole;
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,7 +23,6 @@ public class UserContext implements Principal, UserDetails {
     private String email;
     private String fullName;
     private UserRole role;
-    @Nullable
     private ContextUserDTO loggedAs;
 
     private List<ContextUserDTO> relationshipsReceiving;
@@ -36,6 +35,14 @@ public class UserContext implements Principal, UserDetails {
         return loggedAs.getFullName();
     }
 
+    @JsonIgnore
+    public List<ContextUserDTO> getActiveRelationshipsReceiving() {
+        return relationshipsReceiving.stream()
+                .filter(relation ->
+                        relation.getActiveFrom().isBefore(OffsetDateTime.now()) &&
+                                (relation.getActiveTo() == null || relation.getActiveTo().isAfter(OffsetDateTime.now())))
+                .toList();
+    }
 
     @JsonIgnore
     @Override

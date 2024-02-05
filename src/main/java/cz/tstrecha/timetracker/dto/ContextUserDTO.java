@@ -1,7 +1,6 @@
 package cz.tstrecha.timetracker.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import cz.tstrecha.timetracker.constant.AccountType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +15,7 @@ public class ContextUserDTO {
     private Long id;
     private String email;
     private String fullName;
+    private AccountType accountType;
     private OffsetDateTime activeFrom;
     private OffsetDateTime activeTo;
     private boolean secureValues;

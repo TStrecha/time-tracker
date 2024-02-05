@@ -3,9 +3,11 @@ package cz.tstrecha.timetracker.constant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum ErrorTypeCode {
 
+    BAD_CREDENTIALS("BadCredentials"),
     PERSON_FIRST_LAST_NAME_MISSING("PersonFirstLastNameMissing"),
     COMPANY_NAME_MISSING("CompanyNameMissing"),
     USER_EMAIL_EXISTS("UserEmailExists"),
@@ -27,8 +29,9 @@ public enum ErrorTypeCode {
     USER_DOES_NOT_HAVE_PERMISSION_TO_CHANGE_CONTEXT("UserDoesNotHavePermissionToChangeContext"),
     ATTEMPTED_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE("AttemptedToCreateRelationshipForSomeoneElse"),
     ATTEMPTED_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE("AttemptedToUpdateRelationshipForSomeoneElse"),
-    PERMISSION_DID_NOT_MATCH_REQUIRED_PATTERN("PermissionDidNotMatchRequiredPattern");
+    PERMISSION_DID_NOT_MATCH_REQUIRED_PATTERN("PermissionDidNotMatchRequiredPattern"),
+    AUTH_TOKEN_EXPIRED("AuthTokenExpired"),
+    ;
 
-    @Getter
-    private String localizationCode;
+    private final String localizationCode;
 }

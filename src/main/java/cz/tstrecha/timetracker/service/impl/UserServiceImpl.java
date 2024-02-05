@@ -38,7 +38,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -143,10 +142,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public LoginResponseDTO changeContext(Long id, UserContext userContext) {
-        var contextUserDTO = userContext.getRelationshipsReceiving().stream()
+        var contextUserDTO = userContext.getActiveRelationshipsReceiving().stream()
                 .filter(relation -> relation.getId().equals(id))
-                .filter(relation -> relation.getActiveFrom().isBefore(OffsetDateTime.now()) &&
-                        (relation.getActiveTo() == null || relation.getActiveTo().isAfter(OffsetDateTime.now())))
                 .findFirst()
                 .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]", ErrorTypeCode.USER_DOES_NOT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
 
@@ -154,9 +151,7 @@ public class UserServiceImpl implements UserService {
 
         var token = authenticationService.generateToken(userEntity, contextUserDTO);
         var refreshToken = authenticationService.generateRefreshToken(userEntity.getId(), contextUserDTO.getId());
-        return new LoginResponseDTO(true,
-                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + token,
-                JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + refreshToken);
+        return new LoginResponseDTO(true, token, refreshToken);
     }
 
     @Override
@@ -224,8 +219,7 @@ public class UserServiceImpl implements UserService {
 
     private UserEntity authenticateAndRetrieveUser(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-        var user = userRepository.findByEmail(email)
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + email + "]"));
-        return user;
     }
 }

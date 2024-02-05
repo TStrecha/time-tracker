@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.repository.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.SecretMode;
 import cz.tstrecha.timetracker.constant.UserRole;
@@ -78,6 +79,15 @@ public class UserEntity implements UserDetails {
     private OffsetDateTime createdAt;
     @UpdateTimestamp
     private OffsetDateTime modifiedAt;
+
+    @JsonIgnore
+    public List<UserRelationshipEntity> getActiveRelationshipsReceiving() {
+        return userRelationshipReceiving.stream()
+                .filter(relation ->
+                        relation.getActiveFrom().isBefore(OffsetDateTime.now()) &&
+                                (relation.getActiveTo() == null || relation.getActiveTo().isAfter(OffsetDateTime.now())))
+                .toList();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

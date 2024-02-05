@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.2</version>
+        <version>3.2.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>cz.tstrecha</groupId>
@@ -14,14 +14,14 @@
     <name>time-tracker</name>
     <description>time-tracker</description>
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <jjwt.version>0.11.5</jjwt.version>
         <mapstruct.version>1.5.1.Final</mapstruct.version>
         <postresql.version>42.3.8</postresql.version>
-        <liquibase-core.version>4.17.2</liquibase-core.version>
+        <liquibase-core.version>4.25.1</liquibase-core.version>
         <openapi.version>2.0.2</openapi.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <lombok.version>1.18.20</lombok.version>
+        <lombok.version>1.18.30</lombok.version>
         <liquibase-maven-plugin.version>4.19.1</liquibase-maven-plugin.version>
         <spring-cloud-starter-bootstrap.version>4.0.0</spring-cloud-starter-bootstrap.version>
         <embedded-postgresql.version>2.3.2</embedded-postgresql.version>
@@ -158,8 +158,8 @@
                             <version>${hibernate.version}</version>
                         </path>
                     </annotationProcessorPaths>
-                    <release>17</release>
-                    <target>17</target>
+                    <release>${java.version}</release>
+                    <target>${java.version}</target>
                     <compilerArgs>
                         <arg>-Amapstruct.suppressGeneratorTimestamp=true</arg>
                         <arg>-Amapstruct.defaultComponentModel=spring</arg>

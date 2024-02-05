@@ -20,6 +20,8 @@ public class AppConfig {
 
     private String defaultTimeZone;
 
+    private boolean createDefaultUsers;
+
     @Data
     public static class AuthConfig {
 
