@@ -23,8 +23,8 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <lombok.version>1.18.30</lombok.version>
         <liquibase-maven-plugin.version>4.25.1</liquibase-maven-plugin.version>
-        <spring-cloud-starter-bootstrap.version>4.0.0</spring-cloud-starter-bootstrap.version>
-        <embedded-postgresql.version>2.3.2</embedded-postgresql.version>
+        <spring-cloud-starter-bootstrap.version>4.1.1</spring-cloud-starter-bootstrap.version>
+        <embedded-postgresql.version>3.1.4</embedded-postgresql.version>
         <jackson-datatype-jsr310.version>2.14.2</jackson-datatype-jsr310.version>
         <hibernate.version>6.1.7.Final</hibernate.version>
     </properties>
