@@ -30,7 +30,6 @@ public enum ErrorTypeCode {
     ATTEMPTED_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE("AttemptedToCreateRelationshipForSomeoneElse"),
     ATTEMPTED_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE("AttemptedToUpdateRelationshipForSomeoneElse"),
     PERMISSION_DID_NOT_MATCH_REQUIRED_PATTERN("PermissionDidNotMatchRequiredPattern"),
-    AUTH_TOKEN_EXPIRED("AuthTokenExpired"),
     ;
 
     private final String localizationCode;

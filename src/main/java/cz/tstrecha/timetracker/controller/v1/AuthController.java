@@ -42,7 +42,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<String> refreshToken(@RequestBody String token){
+    public ResponseEntity<LoginResponseDTO> refreshToken(@RequestBody String token){
         return new ResponseEntity<>(authenticationService.refreshToken(token), HttpStatus.OK);
     }
 }

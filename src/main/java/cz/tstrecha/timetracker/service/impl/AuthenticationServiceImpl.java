@@ -3,19 +3,18 @@ package cz.tstrecha.timetracker.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tstrecha.timetracker.config.AppConfig;
 import cz.tstrecha.timetracker.constant.ErrorTypeCode;
+import cz.tstrecha.timetracker.controller.exception.GenericUnauthorizedException;
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
-import cz.tstrecha.timetracker.controller.exception.UnauthorizedException;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
+import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.jackson.io.JacksonSerializer;
 import io.jsonwebtoken.security.Keys;
 import jakarta.persistence.EntityNotFoundException;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -93,18 +93,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public UserContext getUserContext(String authToken) {
-        return objectMapper.convertValue(extractClaims(authToken).get(USER_CONTEXT_CLAIM_KEY), UserContext.class);
+    public UserContext getUserContext(Claims claims) {
+        return objectMapper.convertValue(claims.get(USER_CONTEXT_CLAIM_KEY), UserContext.class);
     }
 
     @Override
     @Transactional
-    public String refreshToken(String token) {
-        var claims = extractClaims(token);
+    public LoginResponseDTO refreshToken(String token) {
+        var claims = extractClaims(token).orElseThrow(GenericUnauthorizedException::new);
         if(isTokenExpired(claims)) {
-            throw new IllegalArgumentException("Expired token");
+            throw new GenericUnauthorizedException();
         }
-        
+
         var userId = claims.get(USER_ID_CLAIM_KEY, Long.class);
         var authorizedAsUserId = claims.get(AUTHORIZED_AS_USER_CLAIM_KEY, Long.class);
 
@@ -115,20 +115,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .findFirst()
                 .orElseThrow(() -> new PermissionException("User doesn't have permission to change context to id [" + authorizedAsUserId + "]", ErrorTypeCode.USER_DOES_NOT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
 
-        return generateToken(user, userMapper.userRelationshipEntityToContextUserDTO(userRelationship));
+        return new LoginResponseDTO(true, generateToken(user, userMapper.userRelationshipEntityToContextUserDTO(userRelationship)), token);
     }
 
     @Override
-    public Claims extractClaims(String authToken){
+    public Optional<Claims> extractClaims(String authToken){
+        var signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(appConfig.getAuth().getSecretKey()));
+
         try {
-            var signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(appConfig.getAuth().getSecretKey()));
-            return Jwts.parserBuilder()
+            var claims = Jwts.parserBuilder()
                     .setSigningKey(signInKey)
                     .build()
                     .parseClaimsJws(authToken)
                     .getBody();
-        } catch (ExpiredJwtException | DecodingException jwtException) {
-            throw new UnauthorizedException("Authorization token has expired.", ErrorTypeCode.AUTH_TOKEN_EXPIRED);
+
+            return Optional.of(claims);
+        } catch (Exception ignored) {
+            return Optional.empty();
         }
     }
 }
