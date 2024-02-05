@@ -1,9 +1,6 @@
 package cz.tstrecha.timetracker.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tstrecha.timetracker.controller.exception.LocalizedException;
 import cz.tstrecha.timetracker.service.AuthenticationService;
-import cz.tstrecha.timetracker.service.impl.ErrorCodeResolverImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,37 +27,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthenticationService authenticationService;
     private final UserDetailsService userDetailsService;
-    private final ErrorCodeResolverImpl errorCodeResolver;
-    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        try {
-            final var authHeader = request.getHeader(AUTHORIZATION_HEADER_NAME);
-            if (authHeader == null || !authHeader.startsWith(AUTHORIZATION_HEADER_BEARER_PREFIX)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            final var authToken = authHeader.substring(AUTHORIZATION_HEADER_BEARER_PREFIX.length());
-            final var claims = authenticationService.extractClaims(authToken);
+        final var authHeader = request.getHeader(AUTHORIZATION_HEADER_NAME);
+        if (authHeader == null || !authHeader.startsWith(AUTHORIZATION_HEADER_BEARER_PREFIX)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        final var authToken = authHeader.substring(AUTHORIZATION_HEADER_BEARER_PREFIX.length());
+
+        authenticationService.extractClaims(authToken).ifPresent(claims -> {
             final var userEmail = authenticationService.getUserEmailFromJwt(claims);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 var userDetails = userDetailsService.loadUserByUsername(userEmail);
                 if (authenticationService.isTokenValid(claims, userDetails)) {
                     var usernamePasswordAuthenticationToken =
-                            new UsernamePasswordAuthenticationToken(authenticationService.getUserContext(authToken), null, userDetails.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(authenticationService.getUserContext(claims), null, userDetails.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
             }
-            filterChain.doFilter(request, response);
-        } catch (LocalizedException exception) {
-            var responseEntity = errorCodeResolver.resolveException(exception);
+        });
 
-            response.setStatus(responseEntity.getStatusCode().value());
-            response.getWriter().write(objectMapper.writeValueAsString(responseEntity.getBody()));
-        }
+        filterChain.doFilter(request, response);
     }
 }

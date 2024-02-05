@@ -1,11 +1,14 @@
 package cz.tstrecha.timetracker.service;
 
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
+import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import io.jsonwebtoken.Claims;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Optional;
 
 public interface AuthenticationService {
     /**
@@ -48,22 +51,22 @@ public interface AuthenticationService {
 
     /**
      *
-     * @param authToken
+     * @param claims
      * @return
      */
-    UserContext getUserContext(String authToken);
+    UserContext getUserContext(Claims claims);
 
     /**
      *
      * @param token
      * @return
      */
-    String refreshToken(String token);
+    LoginResponseDTO refreshToken(String token);
 
     /**
      *
      * @param authToken
      * @return
      */
-    Claims extractClaims(String authToken);
+    Optional<Claims> extractClaims(String authToken);
 }
