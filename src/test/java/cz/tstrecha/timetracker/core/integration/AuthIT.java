@@ -102,10 +102,11 @@ public class AuthIT extends IntegrationTest {
         var loginRequest = new LoginRequestDTO();
         loginRequest.setEmail(USER_EMAIL);
         loginRequest.setPassword(USER_PASSWORD + "fail");
+
         mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/login")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(MockMvcResultMatchers.status().isForbidden())
+                .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
                 .andReturn()
                 .getResponse();
     }
@@ -291,18 +292,13 @@ public class AuthIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
-    public void test12_refreshUser_failure(){
+    public void test12_refreshUser_failure() {
         var refreshToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjUxOSwiYXV0aG9yaXplZEFzVXNlcklkIjo1NTIsImlhdCI6MTY3ODk5MDU2NCwiZXhwIjoxNjc5MDc2OTY0fQ.3_qWnyc9weSct8eEXn5u7fohYw6TV6SSkRXiqyE8K_A";
 
-        var exception = Assertions.assertThrows(ServletException.class, () -> mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "auth/refresh")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(refreshToken))
-                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-                .andReturn()
-                .getResponse());
-
-        Assertions.assertTrue(exception.getMessage().contains("JWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted."));
+        mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(refreshToken))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     private UserRegistrationRequestDTO createUserRequest(){
