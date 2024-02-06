@@ -32,7 +32,7 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-public class AuthIT extends IntegrationTest {
+class AuthIT extends IntegrationTest {
 
     private final static String USER_EMAIL = "test@case.0";
     private final static String USER_PASSWORD = "testcase0";
@@ -46,7 +46,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test01_createUser_success() {
+    void test01_createUser_success() {
         var request = createUserRequest();
         var apiResult = mvc.perform(
                         post(Constants.V1_CONTROLLER_ROOT + "auth/register")
@@ -69,28 +69,28 @@ public class AuthIT extends IntegrationTest {
         Assertions.assertNull(user.getCompanyName());
 
         Assertions.assertEquals(1, user.getRelationsReceiving().size());
-        Assertions.assertEquals(user.getId(), user.getRelationsReceiving().get(0).getOppositeUserId());
-        Assertions.assertEquals(user.getDisplayName(), user.getRelationsReceiving().get(0).getDisplayName());
-        Assertions.assertEquals(List.of("*"), user.getRelationsReceiving().get(0).getPermissions());
-        Assertions.assertNotNull(user.getRelationsReceiving().get(0).getActiveFrom());
-        Assertions.assertNull(user.getRelationsReceiving().get(0).getActiveTo());
+        Assertions.assertEquals(user.getId(), user.getRelationsReceiving().getFirst().getOppositeUserId());
+        Assertions.assertEquals(user.getDisplayName(), user.getRelationsReceiving().getFirst().getDisplayName());
+        Assertions.assertEquals(List.of("*"), user.getRelationsReceiving().getFirst().getPermissions());
+        Assertions.assertNotNull(user.getRelationsReceiving().getFirst().getActiveFrom());
+        Assertions.assertNull(user.getRelationsReceiving().getFirst().getActiveTo());
 
         Assertions.assertEquals(1, user.getRelationsGiving().size());
-        Assertions.assertEquals(user.getId(), user.getRelationsGiving().get(0).getOppositeUserId());
-        Assertions.assertEquals(user.getDisplayName(), user.getRelationsGiving().get(0).getDisplayName());
-        Assertions.assertEquals(List.of("*"), user.getRelationsGiving().get(0).getPermissions());
-        Assertions.assertNotNull(user.getRelationsGiving().get(0).getActiveFrom());
-        Assertions.assertNull(user.getRelationsGiving().get(0).getActiveTo());
+        Assertions.assertEquals(user.getId(), user.getRelationsGiving().getFirst().getOppositeUserId());
+        Assertions.assertEquals(user.getDisplayName(), user.getRelationsGiving().getFirst().getDisplayName());
+        Assertions.assertEquals(List.of("*"), user.getRelationsGiving().getFirst().getPermissions());
+        Assertions.assertNotNull(user.getRelationsGiving().getFirst().getActiveFrom());
+        Assertions.assertNull(user.getRelationsGiving().getFirst().getActiveTo());
 
         var settings = userRepository.findById(user.getId()).get().getSettings();
         Assertions.assertEquals(1, settings.size());
-        Assertions.assertNotNull(settings.get(0).getValidFrom());
-        Assertions.assertNull(settings.get(0).getValidTo());
+        Assertions.assertNotNull(settings.getFirst().getValidFrom());
+        Assertions.assertNull(settings.getFirst().getValidTo());
     }
     @Test
     @SneakyThrows
     @Transactional
-    public void test02_loginUser_failure() {
+    void test02_loginUser_failure() {
         var registrationRequest = createUserRequest();
         mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/register")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -114,7 +114,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test03_loginUser_success() {
+    void test03_loginUser_success() {
         var token = registerUserAndGetToken(createUserRequest());
         String[] chunks = token.replace(JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX, "").split("\\.");
         Base64.Decoder decoder = Base64.getUrlDecoder();
@@ -137,7 +137,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test04_getLoggedUserDetails_failure() {
+    void test04_getLoggedUserDetails_failure() {
         mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user")
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
@@ -148,7 +148,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test05_getLoggedUserDetails_success() {
+    void test05_getLoggedUserDetails_success() {
         var token = registerUserAndGetToken(createUserRequest());
 
         var response = mvc.perform(get(Constants.V1_CONTROLLER_ROOT + "user")
@@ -167,7 +167,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test06_registerUser_fail_emailAlreadyExists() {
+    void test06_registerUser_fail_emailAlreadyExists() {
         var request = createUserRequest();
         userService.createUser(request, UserRole.USER);
 
@@ -181,7 +181,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test07_registerUser_fail_companyNameNotPresentForCompanyAccount() {
+    void test07_registerUser_fail_companyNameNotPresentForCompanyAccount() {
         var request = createUserRequest();
         request.setAccountType(AccountType.COMPANY);
 
@@ -195,7 +195,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test08_registerUser_fail_namesNotPresentForUserAccount() {
+    void test08_registerUser_fail_namesNotPresentForUserAccount() {
         var request = createUserRequest();
         request.setFirstName(null);
         request.setLastName(null);
@@ -224,7 +224,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test09_registerUser_fail_passwordDoesntContainDigit() {
+    void test09_registerUser_fail_passwordDoesntContainDigit() {
         var request = createUserRequest();
         request.setPassword("test");
 
@@ -238,7 +238,7 @@ public class AuthIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test10_registerUser_success_companyAccount() {
+    void test10_registerUser_success_companyAccount() {
         var request = createUserRequest();
         request.setAccountType(AccountType.COMPANY);
         request.setCompanyName(COMPANY_NAME);
@@ -258,7 +258,7 @@ public class AuthIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
-    public void test11_refreshUser_success(){
+    void test11_refreshUser_success(){
         var registeredToken = registerUserAndGetToken(createUserRequest()).split("\\.")[1];
 
         var loginRequest = new LoginRequestDTO();
@@ -292,7 +292,7 @@ public class AuthIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
-    public void test12_refreshUser_failure() {
+    void test12_refreshUser_failure() {
         var refreshToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjUxOSwiYXV0aG9yaXplZEFzVXNlcklkIjo1NTIsImlhdCI6MTY3ODk5MDU2NCwiZXhwIjoxNjc5MDc2OTY0fQ.3_qWnyc9weSct8eEXn5u7fohYw6TV6SSkRXiqyE8K_A";
 
         mvc.perform(post(Constants.V1_CONTROLLER_ROOT + "auth/refresh")
@@ -339,7 +339,7 @@ public class AuthIT extends IntegrationTest {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class ContextWrapper {
+    static class ContextWrapper {
 
         private UserContext user;
     }
@@ -347,7 +347,7 @@ public class AuthIT extends IntegrationTest {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class AlgorithmHeader {
+    static class AlgorithmHeader {
 
         private SignatureAlgorithm alg;
     }

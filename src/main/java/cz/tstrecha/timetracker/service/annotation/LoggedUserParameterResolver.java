@@ -44,8 +44,6 @@ public class LoggedUserParameterResolver implements HandlerMethodArgumentResolve
         var userEntity = annotation.fillUserEntity() ?
                 userRepository.findById(userContext.getId())
                         .orElseThrow(() -> new UserInputException("User not found by id [" + userContext.getId() + "]",  ErrorTypeCode.USER_NOT_FOUND_BY_ID)) : null;
-        var loggedUser = userMapper.toLoggedUser(userContext.getLoggedAs(), userEntity);
-
-        return loggedUser;
+        return userMapper.toLoggedUser(userContext.getLoggedAs(), userEntity);
     }
 }

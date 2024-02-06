@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SettingsIT extends IntegrationTest {
+class SettingsIT extends IntegrationTest {
 
     @Autowired
     private SettingsService settingsService;
@@ -30,8 +30,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test01_createSetting_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test01_createSetting_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -42,7 +42,7 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
         assertNotNull(settingDTO.getValidFrom());
         assertNull(settingDTO.getValidTo());
@@ -55,8 +55,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test02_createSetting_fail_toIsBeforeFrom() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test02_createSetting_fail_toIsBeforeFrom() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -67,7 +67,9 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
+        var loggedUser = userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user);
+
+        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, loggedUser));
 
         assertEquals(ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
@@ -78,8 +80,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test03_createSetting_fail_settingWithSameNameAlreadyExists() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test03_createSetting_fail_settingWithSameNameAlreadyExists() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -90,8 +92,11 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
-        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
+        var loggedUser = userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user);
+
+        settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
+
+        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, loggedUser));
 
         assertEquals(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
@@ -102,8 +107,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test04_createSetting_fail_settingsIntersects() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test04_createSetting_fail_settingsIntersects() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -114,10 +119,12 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var loggedUser = userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user);
+
+        settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
         request.setName("TimeTracker1");
         request.setValidFrom(LocalDate.now().plusDays(4));
-        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
+        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, loggedUser));
 
         assertEquals(ErrorTypeCode.INTERSECTS_WITH_OTHER_SETTINGS, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
@@ -128,8 +135,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test05_updateSetting_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test05_updateSetting_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -140,7 +147,7 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
         request.setId(settingDTO.getId());
         request.setValidTo(LocalDate.now().plusMonths(6));
@@ -149,7 +156,7 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTrackerUpdated");
         request.setNote("Test note updated");
 
-        var updatedSettingDTO = settingsService.updateSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var updatedSettingDTO = settingsService.updateSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
         assertNotNull(updatedSettingDTO.getValidFrom());
         assertEquals(updatedSettingDTO.getValidFrom().plusMonths(6), updatedSettingDTO.getValidTo());
@@ -162,8 +169,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test06_updateSetting_fail_settingNotFoundById() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test06_updateSetting_fail_settingNotFoundById() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(10);
@@ -174,7 +181,9 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
+        var loggedUser = userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user);
+
+        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, loggedUser));
 
         assertEquals(ErrorTypeCode.SETTING_NOT_FOUND_BY_ID, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
@@ -185,8 +194,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test07_updateSetting_fail_updatingNoLongerValidSetting() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test07_updateSetting_fail_updatingNoLongerValidSetting() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -197,12 +206,13 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var loggedUser =  userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user);
+        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
         request.setId(settingDTO.getId());
         request.setValidFrom(LocalDate.now());
         request.setValidTo(null);
-        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
+        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, loggedUser));
 
         assertEquals(ErrorTypeCode.SETTING_NO_LONGER_VALID, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
@@ -213,8 +223,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test08_updateSetting_fail_validFromBeforeTo() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test08_updateSetting_fail_validFromBeforeTo() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -225,13 +235,13 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var loggedUser = userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user);
+        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
         request.setId(settingDTO.getId());
         request.setValidFrom(LocalDate.now().plusDays(1));
         request.setValidTo(LocalDate.now());
-        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
-
+        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, loggedUser));
         assertEquals(ErrorTypeCode.SETTING_NO_LONGER_VALID, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
         assertEquals("You cannot change no longer valid settings.", exception.getMessage());
@@ -241,8 +251,8 @@ public class SettingsIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test09_updateSetting_fail_alreadySettingWithSameName() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test09_updateSetting_fail_alreadySettingWithSameName() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
         request.setId(0);
@@ -253,15 +263,18 @@ public class SettingsIT extends IntegrationTest {
         request.setName("TimeTracker");
         request.setNote("Test note");
 
-        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var loggedUser = userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user);
+        var settingDTO = settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
+
         request.setName("TimeTracker1");
         request.setValidFrom(LocalDate.now().plusMonths(1));
-        settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        settingsService.createSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
         request.setId(settingDTO.getId());
         request.setName("TimeTracker1");
-        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)));
 
+        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, loggedUser));
+        
         assertEquals(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
         assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
         assertEquals("There is already a setting with this name.", exception.getMessage());

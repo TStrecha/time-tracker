@@ -30,7 +30,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TaskListingIT extends IntegrationTest {
+class TaskListingIT extends IntegrationTest {
 
     @Autowired
     private TaskService taskService;
@@ -40,17 +40,17 @@ public class TaskListingIT extends IntegrationTest {
 
     @BeforeEach
     @Transactional
-    public void createAllTasks(){
+    void createAllTasks(){
         allTasks = new ArrayList<>();
 
         users = mockUsers(5).stream().map(id -> userRepository.findById(id).orElseThrow()).toList();
 
-        allTasks.add(new TaskEntity(1L, 493826L, "Refactor Codebase", "Refactor Codebase", "Improve code quality and organization", "Refactor the codebase to improve maintainability and scalability", TaskStatus.NEW, users.get(0), 90L, OffsetDateTime.now(), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(2L, 292734L, "Integrate Social Media Sharing", "Integrate Social Media Sharing", "Allow users to share content on social media", "Integrate social media sharing functionality to allow users to share content on their social media profiles", TaskStatus.DONE, users.get(0), 60L, OffsetDateTime.now().minusDays(2), OffsetDateTime.now(), false));
-        allTasks.add(new TaskEntity(3L, 312765L, "Implement Two-Factor Authentication", "Implement Two-Factor Authentication", "Add an extra layer of security", "Implement two-factor authentication to protect user accounts", TaskStatus.IN_PROGRESS, users.get(0), 90L, OffsetDateTime.now().minusDays(4), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(4L, 483920L, "Integrate Payment Processing", "Integrate Payment Processing", "Allow users to process payments within the application", "Integrate payment processing to enable users to process payments directly within the application", TaskStatus.DONE, users.get(0), 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(5L, 654321L, "Implement OAuth 2.0", "Implement OAuth 2.0", "Allow users to authenticate with third-party services", "Implement OAuth 2.0 to enable users to authenticate with third-party services within the application", TaskStatus.NEW, users.get(0), 90L, OffsetDateTime.now(), OffsetDateTime.now().plusDays(-4), true));
-        allTasks.add(new TaskEntity(6L, 234567L, "Create Custom Reporting", "Create Custom Reporting", "Provide users with customizable reporting options", "Create a custom reporting system to allow users to generate and export reports based on their data within the application", TaskStatus.NEW, users.get(0), 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(1L, 493826L, "Refactor Codebase", "Refactor Codebase", "Improve code quality and organization", "Refactor the codebase to improve maintainability and scalability", TaskStatus.NEW, users.getFirst(), 90L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(2L, 292734L, "Integrate Social Media Sharing", "Integrate Social Media Sharing", "Allow users to share content on social media", "Integrate social media sharing functionality to allow users to share content on their social media profiles", TaskStatus.DONE, users.getFirst(), 60L, OffsetDateTime.now().minusDays(2), OffsetDateTime.now(), false));
+        allTasks.add(new TaskEntity(3L, 312765L, "Implement Two-Factor Authentication", "Implement Two-Factor Authentication", "Add an extra layer of security", "Implement two-factor authentication to protect user accounts", TaskStatus.IN_PROGRESS, users.getFirst(), 90L, OffsetDateTime.now().minusDays(4), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(4L, 483920L, "Integrate Payment Processing", "Integrate Payment Processing", "Allow users to process payments within the application", "Integrate payment processing to enable users to process payments directly within the application", TaskStatus.DONE, users.getFirst(), 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(5L, 654321L, "Implement OAuth 2.0", "Implement OAuth 2.0", "Allow users to authenticate with third-party services", "Implement OAuth 2.0 to enable users to authenticate with third-party services within the application", TaskStatus.NEW, users.getFirst(), 90L, OffsetDateTime.now(), OffsetDateTime.now().plusDays(-4), true));
+        allTasks.add(new TaskEntity(6L, 234567L, "Create Custom Reporting", "Create Custom Reporting", "Provide users with customizable reporting options", "Create a custom reporting system to allow users to generate and export reports based on their data within the application", TaskStatus.NEW, users.getFirst(), 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
         allTasks.add(new TaskEntity(7L, 987654L, "Update User Authentication", "Update User Authentication", "Enhance security measures for user authentication", "Implement multi-factor authentication and enhance password encryption to improve user account security", TaskStatus.NEW, users.get(1), 30L, OffsetDateTime.now().minusDays(100), OffsetDateTime.now(), true));
         allTasks.add(new TaskEntity(8L, 654321L, "Implement Chat Feature", "Implement Chat Feature", "Enhance communication with real-time chat functionality", "Integrate a chat feature to allow users to communicate in real-time within the application", TaskStatus.NEW, users.get(2), 55L, OffsetDateTime.now(), OffsetDateTime.now(), true));
         allTasks.add(new TaskEntity(9L, 876543L, "Optimize Database Queries", "Optimize Database Queries", "Improve performance by optimizing database queries", "Identify and optimize slow-performing database queries to enhance overall system performance", TaskStatus.NEW, users.get(2), 50L, OffsetDateTime.now().minusDays(12), OffsetDateTime.now(), true));
@@ -64,10 +64,10 @@ public class TaskListingIT extends IntegrationTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("filterData")
-    public void test01_listTasks_filtering(TaskFilterField taskFilterField, String value, List<Long> rightIndices) {
+    void test01_listTasks_filtering(TaskFilterField taskFilterField, String value, List<Long> rightIndices) {
         TaskFilter taskFilter = new TaskFilter(Map.of(taskFilterField, value), TaskFilterField.ID, SortDirection.ASC, 5, 0);
-        var user = users.get(0);
-        var tasks = taskService.listTasks(taskFilter, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)).toList();
+        var user = users.getFirst();
+        var tasks = taskService.listTasks(taskFilter, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user)).toList();
 
         Assertions.assertEquals(rightIndices.size(), tasks.size());
         Assertions.assertTrue(tasks.stream().map(TaskCreateRequestDTO::getId).allMatch(rightIndices::contains));
@@ -77,11 +77,11 @@ public class TaskListingIT extends IntegrationTest {
     @Transactional
     @ParameterizedTest
     @MethodSource("sortingData")
-    public <U extends Comparable<? super U>> void test02_listTasks_sorting(TaskFilterField sortField,
+    <U extends Comparable<? super U>> void test02_listTasks_sorting(TaskFilterField sortField,
                                                                            Function<TaskEntity, ? extends U> mappingFunction,
                                                                            boolean asc) {
         var taskFilterAsc = new TaskFilter(Map.of(), sortField, asc ? SortDirection.ASC : SortDirection.DESC, Integer.MAX_VALUE, 0);
-        var user = users.get(0);
+        var user = users.getFirst();
         var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(user.getId())).toList();
 
         Comparator<TaskEntity> comparator;
@@ -91,7 +91,7 @@ public class TaskListingIT extends IntegrationTest {
             comparator = Comparator.comparing(mappingFunction).reversed();
         }
 
-        var tasksSortedAsc = taskService.listTasks(taskFilterAsc, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user)).toList();
+        var tasksSortedAsc = taskService.listTasks(taskFilterAsc, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user)).toList();
         var sortedManuallyAsc = currentUserTasks.stream().sorted(comparator).toList();
 
         Assertions.assertEquals(currentUserTasks.size(), tasksSortedAsc.size());
@@ -107,13 +107,13 @@ public class TaskListingIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test03_listTasks_sortFiltered() {
+    void test03_listTasks_sortFiltered() {
         var taskFilter = new TaskFilter(Map.of(TaskFilterField.STATUS, "NEW"), TaskFilterField.DESCRIPTION, SortDirection.DESC, Integer.MAX_VALUE, 0);
 
-        var user = users.get(0);
+        var user = users.getFirst();
         var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(user.getId())).toList();
 
-        var tasks = taskService.listTasks(taskFilter, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var tasks = taskService.listTasks(taskFilter, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
         var manuallySorted = currentUserTasks.stream()
                 .filter(task -> task.getStatus() == TaskStatus.NEW)
@@ -131,21 +131,21 @@ public class TaskListingIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test04_listTasks_pages() {
+    void test04_listTasks_pages() {
         var firstPage = new TaskFilter(Map.of(), TaskFilterField.ID, SortDirection.ASC, 5, 0);
         var secondPage = new TaskFilter(Map.of(), TaskFilterField.ID, SortDirection.ASC, 5, 1);
 
-        var user = users.get(0);
+        var user = users.getFirst();
 
-        var tasksFirstPage = taskService.listTasks(firstPage, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
-        var tasksSecondPage = taskService.listTasks(secondPage, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().get(0)), user));
+        var tasksFirstPage = taskService.listTasks(firstPage, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
+        var tasksSecondPage = taskService.listTasks(secondPage, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
 
-        Assertions.assertEquals(tasksFirstPage.getTotalElements(), 6);
-        Assertions.assertEquals(tasksFirstPage.getTotalPages(), 2);
-        Assertions.assertEquals(tasksSecondPage.getTotalPages(), 2);
+        Assertions.assertEquals(6, tasksFirstPage.getTotalElements());
+        Assertions.assertEquals(2, tasksFirstPage.getTotalPages());
+        Assertions.assertEquals(2, tasksSecondPage.getTotalPages());
 
-        Assertions.assertEquals(tasksFirstPage.getNumberOfElements(), 5);
-        Assertions.assertEquals(tasksSecondPage.getNumberOfElements(), 1);
+        Assertions.assertEquals(5, tasksFirstPage.getNumberOfElements());
+        Assertions.assertEquals(1, tasksSecondPage.getNumberOfElements());
     }
 
     private static Stream<Arguments> filterData(){
