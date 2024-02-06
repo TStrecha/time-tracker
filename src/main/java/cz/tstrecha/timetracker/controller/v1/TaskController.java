@@ -47,8 +47,8 @@ public class TaskController {
     }
 
     @PostMapping("/{identifier}/{identifierValue}")
-    public ResponseEntity<TaskDTO> createEmptyTask(@PathVariable IdentifierType identifier,
-                                                   @PathVariable String identifierValue,
+    public ResponseEntity<TaskDTO> createEmptyTask(@PathVariable("identifier") IdentifierType identifier,
+                                                   @PathVariable("identifierValue") String identifierValue,
                                                    @InjectLoggedUser LoggedUser user){
         return new ResponseEntity<>(taskService.createEmptyTask(identifier,identifierValue,user), HttpStatus.CREATED);
     }
@@ -62,28 +62,28 @@ public class TaskController {
 
     @PatchMapping("/{id}/{newStatus}")
     @PermissionCheck("task.update")
-    public ResponseEntity<TaskDTO> changeTaskStatus(@PathVariable Long id,
-                                                    @PathVariable TaskStatus newStatus,
+    public ResponseEntity<TaskDTO> changeTaskStatus(@PathVariable("id") Long id,
+                                                    @PathVariable("newStatus") TaskStatus newStatus,
                                                     @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.changeTaskStatus(id, newStatus, loggedUser), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     @PermissionCheck("task.update")
-    public ResponseEntity<TaskDTO> deleteTask(@PathVariable Long id, @InjectLoggedUser LoggedUser loggedUser){
+    public ResponseEntity<TaskDTO> deleteTask(@PathVariable("id") Long id, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.deleteTask(id, loggedUser), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/reactivate")
     @PermissionCheck("task.update")
-    public ResponseEntity<TaskDTO> reactivateTask(@PathVariable Long id, @InjectLoggedUser LoggedUser loggedUser){
+    public ResponseEntity<TaskDTO> reactivateTask(@PathVariable("id") Long id, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.reactivateTask(id, loggedUser), HttpStatus.OK);
     }
 
     @GetMapping("/search/{query}")
-    public ResponseEntity<List<TaskDTO>> searchForTasks(@PathVariable String query,
-                                                     @RequestParam(defaultValue = "5", required = false) Long limit,
-                                                     @InjectLoggedUser LoggedUser user){
+    public ResponseEntity<List<TaskDTO>> searchForTasks(@PathVariable("query") String query,
+                                                        @RequestParam(defaultValue = "5", required = false) Long limit,
+                                                        @InjectLoggedUser LoggedUser user){
         return new ResponseEntity<>(taskService.searchForTasks(query,limit,user), HttpStatus.OK);
     }
 
