@@ -166,7 +166,7 @@ public class SettingsIT extends IntegrationTest {
         var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
 
         SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-        request.setId(1);
+        request.setId(10);
         request.setValidFrom(LocalDate.now());
         request.setValidTo(null);
         request.setMoneyPerHour(BigDecimal.valueOf(100));
