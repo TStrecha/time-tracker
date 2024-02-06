@@ -11,6 +11,11 @@ public class IllegalEntityStateException extends UserInputException {
         super(message, errorTypeCode, entityType);
     }
 
+
+    public IllegalEntityStateException(String message, ErrorTypeCode errorTypeCode, Class<?> target) {
+        super(message, errorTypeCode, target);
+    }
+
     public IllegalEntityStateException(String message, ErrorTypeCode errorTypeCode) {
         super(message, errorTypeCode);
     }

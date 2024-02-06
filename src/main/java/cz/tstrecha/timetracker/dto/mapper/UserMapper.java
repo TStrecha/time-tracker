@@ -15,15 +15,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
 @Mapper
 public abstract class UserMapper {
 
-    @Autowired
-    RelationshipMapper relationshipMapper;
+    protected RelationshipMapper relationshipMapper = Mappers.getMapper(RelationshipMapper.class);
 
     public abstract UserEntity fromRegistrationRequest(UserRegistrationRequestDTO registrationRequest, String passwordHashed, UserRole role);
 

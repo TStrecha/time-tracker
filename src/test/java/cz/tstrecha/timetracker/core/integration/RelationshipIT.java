@@ -24,7 +24,7 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
-public class RelationshipIT extends IntegrationTest {
+class RelationshipIT extends IntegrationTest {
 
     @Autowired
     private RelationshipMapper relationshipMapper;
@@ -32,10 +32,10 @@ public class RelationshipIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test01_createRelationship_success() {
+    void test01_createRelationship_success() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.get(0));
+        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -45,7 +45,7 @@ public class RelationshipIT extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request))
                         .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                userRepository.findById(userIds.get(0)).orElseThrow(),
+                                userRepository.findById(userIds.getFirst()).orElseThrow(),
                                 null)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
@@ -63,10 +63,10 @@ public class RelationshipIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test02_createRelationship_fail_createForOtherUser() {
+    void test02_createRelationship_fail_createForOtherUser() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.get(0)+1);
+        request.setFromId(userIds.getFirst()+1);
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -76,7 +76,7 @@ public class RelationshipIT extends IntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .content(objectMapper.writeValueAsString(request))
                             .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                    userRepository.findById(userIds.get(0)).orElseThrow(),
+                                    userRepository.findById(userIds.getFirst()).orElseThrow(),
                                     null)))
             .andExpect(MockMvcResultMatchers.status().isForbidden())
             .andReturn()
@@ -92,10 +92,10 @@ public class RelationshipIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test03_createRelationship_fail_createSameRelationship() {
+    void test03_createRelationship_fail_createSameRelationship() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.get(0));
+        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -105,7 +105,7 @@ public class RelationshipIT extends IntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userRepository.findById(userIds.get(0)).orElseThrow(),
+                                        userRepository.findById(userIds.getFirst()).orElseThrow(),
                                         null)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
@@ -116,7 +116,7 @@ public class RelationshipIT extends IntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userRepository.findById(userIds.get(0)).orElseThrow(),
+                                        userRepository.findById(userIds.getFirst()).orElseThrow(),
                                         null)))
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
                 .andReturn()
@@ -132,10 +132,10 @@ public class RelationshipIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test04_createRelationship_fail_createForOtherUser() {
+    void test04_createRelationship_fail_createForOtherUser() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.get(0));
+        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -145,7 +145,7 @@ public class RelationshipIT extends IntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userRepository.findById(userIds.get(0)).orElseThrow(),
+                                        userRepository.findById(userIds.getFirst()).orElseThrow(),
                                         new ContextUserDTO())))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn()
@@ -161,17 +161,17 @@ public class RelationshipIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test05_updateRelationship_success() {
+    void test05_updateRelationship_success() {
         var userIds = mockUsers(3);
         var userEntities = userIds.stream().map(id -> userRepository.findById(id).orElseThrow()).toList();
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.get(0));
+        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
 
         var relationshipEntity = relationshipMapper.fromRequest(request,
-                userEntities.get(0),
+                userEntities.getFirst(),
                 userEntities.get(1));
 
         relationshipRepository.save(relationshipEntity);
@@ -185,7 +185,7 @@ public class RelationshipIT extends IntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                       userEntities.get(0), null)))
+                                       userEntities.getFirst(), null)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn()
                 .getResponse();
@@ -201,7 +201,7 @@ public class RelationshipIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test06_updateRelationship_fail_updateOtherUser() {
+    void test06_updateRelationship_fail_updateOtherUser() {
         var userIds = mockUsers(3);
         var userEntities = userIds.stream().map(id -> userRepository.findById(id).orElseThrow()).toList();
         var request = new RelationshipCreateUpdateRequestDTO();
@@ -225,7 +225,7 @@ public class RelationshipIT extends IntegrationTest {
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userEntities.get(0), null)))
+                                        userEntities.getFirst(), null)))
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
                 .andReturn()
                 .getResponse();

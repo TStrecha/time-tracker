@@ -1,6 +1,5 @@
 package cz.tstrecha.timetracker.service.impl;
 
-import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.constant.UserRole;
@@ -105,7 +104,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + request.getToId() + "]"));
 
         if (userRelationshipRepository.existsByFromAndTo(from, to)) {
-            throw new UserInputException("Relationship already exists", ErrorTypeCode.RELATIONSHIP_ALREADY_EXISTS, "RelationshipCreateUpdateRequestDTO");
+            throw new UserInputException("Relationship already exists", ErrorTypeCode.RELATIONSHIP_ALREADY_EXISTS, RelationshipCreateUpdateRequestDTO.class);
         }
         var relation = relationshipMapper.fromRequest(request, from, to);
         relation = userRelationshipRepository.save(relation);
@@ -113,9 +112,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
-            throw new PermissionException("You can only create relationship for yourself.", ErrorTypeCode.ATTEMPTED_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
+            throw new PermissionException("You can only create relationship for yourself.", ErrorTypeCode.ATTEMPTED_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE, RelationshipCreateUpdateRequestDTO.class);
         }
         return transactionRunner.runInNewTransaction(() -> createRelationship(request));
     }
@@ -202,12 +202,10 @@ public class UserServiceImpl implements UserService {
                         ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
                         "UserUpdateDTO");
             }
-        } else if(accountType == AccountType.COMPANY){
-            if (Strings.isEmpty(companyName)){
+        } else if(accountType == AccountType.COMPANY && (Strings.isEmpty(companyName))){
                 throw new UserInputException("Company has to have company name filled in.",
                         ErrorTypeCode.COMPANY_NAME_MISSING,
                         "UserUpdateDTO");
-            }
         }
     }
 

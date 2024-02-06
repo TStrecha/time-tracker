@@ -6,15 +6,16 @@ import lombok.Data;
 @Data
 public abstract class LocalizedException extends RuntimeException {
 
-    private ErrorTypeCode errorTypeCode;
-    private String entityType;
+    private final ErrorTypeCode errorTypeCode;
+    private final String entityType;
 
-    public LocalizedException(String message, ErrorTypeCode errorTypeCode) {
+    protected LocalizedException(String message, ErrorTypeCode errorTypeCode) {
         super(message);
         this.errorTypeCode = errorTypeCode;
+        this.entityType = null;
     }
 
-    public LocalizedException(String message, ErrorTypeCode errorTypeCode, String entityType) {
+    protected LocalizedException(String message, ErrorTypeCode errorTypeCode, String entityType) {
         super(message);
         this.errorTypeCode = errorTypeCode;
         this.entityType = entityType;

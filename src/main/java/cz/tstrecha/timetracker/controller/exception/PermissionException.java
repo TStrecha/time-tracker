@@ -11,6 +11,10 @@ public class PermissionException extends LocalizedException {
         super(message, errorTypeCode, entityType);
     }
 
+    public PermissionException(String message, ErrorTypeCode errorTypeCode, Class<?> target) {
+        super(message, errorTypeCode, target.getSimpleName());
+    }
+
     public PermissionException(String message, ErrorTypeCode errorTypeCode) {
         super(message, errorTypeCode, null);
     }

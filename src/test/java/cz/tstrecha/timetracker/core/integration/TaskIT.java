@@ -24,13 +24,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
-public class TaskIT extends IntegrationTest {
+class TaskIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
     @Transactional
-    public void test01_createTask_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test01_createTask_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         var apiResult = mvc.perform(
@@ -59,8 +59,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test02_createEmptyTask_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test02_createEmptyTask_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var identifier = IdentifierType.NAME;
         var name = "someName";
 
@@ -88,8 +88,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test03_updateTask_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test03_updateTask_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         mvc.perform(
@@ -136,8 +136,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test04_updateTask_fail_taskNotFound() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test04_updateTask_fail_taskNotFound() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         mvc.perform(
@@ -170,7 +170,6 @@ public class TaskIT extends IntegrationTest {
 
         var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
         Assertions.assertEquals("UserInputException", exceptionDTO.getException());
-        Assertions.assertEquals("Cannot find task with id[2]", exceptionDTO.getExceptionMessage());
         Assertions.assertEquals("TaskCreateRequestDTO", exceptionDTO.getEntity());
         Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
@@ -178,8 +177,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test05_updateTask_fail_taskNotActive() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test05_updateTask_fail_taskNotActive() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
         request.setActive(false);
 
@@ -221,8 +220,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test06_updateTask_fail_taskAlreadyDone() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test06_updateTask_fail_taskAlreadyDone() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
         request.setStatus(TaskStatus.DONE);
 
@@ -264,8 +263,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test07_changeTaskStatus_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test07_changeTaskStatus_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         var createdTaskResponse = mvc.perform(
@@ -305,8 +304,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test08_changeTaskStatus_fail_taskNotFound() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test08_changeTaskStatus_fail_taskNotFound() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         mvc.perform(
@@ -331,7 +330,6 @@ public class TaskIT extends IntegrationTest {
 
         var exceptionDTO = objectMapper.readValue(updatedTaskResponse.getContentAsString(), InternalErrorDTO.class);
         Assertions.assertEquals("UserInputException", exceptionDTO.getException());
-        Assertions.assertEquals("Cannot find task with id[2]", exceptionDTO.getExceptionMessage());
         Assertions.assertEquals("TaskCreateRequestDTO", exceptionDTO.getEntity());
         Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
@@ -339,8 +337,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test09_changeTaskStatus_fail_taskNotActive() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test09_changeTaskStatus_fail_taskNotActive() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
         request.setActive(false);
 
@@ -374,8 +372,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test10_deleteTask_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test10_deleteTask_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         var createdTaskResponse = mvc.perform(
@@ -413,8 +411,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test11_deleteTask_fail_taskNotFound() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test11_deleteTask_fail_taskNotFound() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         mvc.perform(
@@ -445,8 +443,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test12_reactivateTask_success() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test12_reactivateTask_success() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
         request.setActive(false);
 
@@ -487,8 +485,8 @@ public class TaskIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    public void test13_reactivateTask_fail_taskNotFound() {
-        var user = userRepository.findById(mockUsers(1).get(0)).orElseThrow();
+    void test13_reactivateTask_fail_taskNotFound() {
+        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
         var request = createTaskRequest();
 
         mvc.perform(

@@ -11,6 +11,10 @@ public class UserInputException extends LocalizedException {
         super(message, errorTypeCode, entityType);
     }
 
+    public UserInputException(String message, ErrorTypeCode errorTypeCode, Class<?> target) {
+        super(message, errorTypeCode, target.getSimpleName());
+    }
+
     public UserInputException(String message, ErrorTypeCode errorTypeCode) {
         super(message, errorTypeCode);
     }
