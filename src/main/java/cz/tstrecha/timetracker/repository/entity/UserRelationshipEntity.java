@@ -20,8 +20,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "UserRelationship")
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"from_id","to_id"}))
+@Entity(name = "user_relationship")
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"from_id", "to_id"}))
 public class UserRelationshipEntity {
 
     private static final String SEQUENCE_NAME = "user_relationship_seq";

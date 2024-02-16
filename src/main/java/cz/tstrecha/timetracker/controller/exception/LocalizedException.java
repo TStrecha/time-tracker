@@ -2,8 +2,10 @@ package cz.tstrecha.timetracker.controller.exception;
 
 import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public abstract class LocalizedException extends RuntimeException {
 
     private final ErrorTypeCode errorTypeCode;

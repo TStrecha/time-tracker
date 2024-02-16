@@ -3,6 +3,7 @@ package cz.tstrecha.timetracker.constant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum TaskFilterField {
 
@@ -17,7 +18,6 @@ public enum TaskFilterField {
     CREATED_AT("updatedAt"),
     UPDATED_AT("updatedAt");
 
-    @Getter
     private final String fieldName;
 }
 

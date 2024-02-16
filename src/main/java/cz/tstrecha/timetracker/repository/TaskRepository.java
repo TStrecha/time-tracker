@@ -49,7 +49,6 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpec
 
     default Predicate getPredicate(TaskFilterField taskFilterField, String value, Root<TaskEntity> root, CriteriaBuilder cb) {
         return switch (taskFilterField) {
-            case ID -> cb.equal(root.get(TaskEntity_.ID), value);
             case NAME_SIMPLE ->
                     cb.like(cb.lower(root.get(TaskEntity_.NAME_SIMPLE)), FilterUtils.enrichLikeStatements(value));
             case CUSTOM_ID ->

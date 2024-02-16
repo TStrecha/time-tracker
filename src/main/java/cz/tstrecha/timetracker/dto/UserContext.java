@@ -10,7 +10,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
-import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,23 +24,12 @@ public class UserContext implements Principal, UserDetails {
     private UserRole role;
     private ContextUserDTO loggedAs;
 
-    private List<ContextUserDTO> relationshipsReceiving;
-
     private List<String> activePermissions; // What permissions has user in context to user in loggedAs
 
     @Override
     @JsonIgnore
     public String getName() {
         return loggedAs.getFullName();
-    }
-
-    @JsonIgnore
-    public List<ContextUserDTO> getActiveRelationshipsReceiving() {
-        return relationshipsReceiving.stream()
-                .filter(relation ->
-                        relation.getActiveFrom().isBefore(OffsetDateTime.now()) &&
-                                (relation.getActiveTo() == null || relation.getActiveTo().isAfter(OffsetDateTime.now())))
-                .toList();
     }
 
     @JsonIgnore

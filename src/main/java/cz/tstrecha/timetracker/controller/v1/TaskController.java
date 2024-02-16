@@ -35,7 +35,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Tag(name = "task-api")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "task", produces = {APPLICATION_JSON_VALUE})
+@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "/task", produces = {APPLICATION_JSON_VALUE})
 public class TaskController {
 
     private final TaskService taskService;

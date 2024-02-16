@@ -19,5 +19,8 @@ public interface SettingsMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "validFrom", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "modifiedAt", ignore = true)
+    @Mapping(target = "user", ignore = true)
     void updateSetting(SettingsCreateUpdateDTO source, @MappingTarget UserSettingsEntity target);
 }

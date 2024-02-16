@@ -24,7 +24,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Tag(name = "settings-api")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "settings", produces = {APPLICATION_JSON_VALUE})
+@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "/settings", produces = {APPLICATION_JSON_VALUE})
 public class SettingsController {
 
     private final SettingsService settingsService;

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,6 +33,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChainSwagger(HttpSecurity http) throws Exception {
         return http
                 .formLogin(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests.requestMatchers("/openapi/v3/**")
                         .permitAll()
@@ -41,7 +43,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/error")
                         .permitAll()
-                        .requestMatchers(Constants.V1_CONTROLLER_ROOT + "auth/**")
+                        .requestMatchers(STR."\{Constants.V1_CONTROLLER_ROOT}/auth/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

@@ -26,6 +26,6 @@ public class LocalizedExceptionHandler {
 
     @ExceptionHandler({BadCredentialsException.class})
     public ResponseEntity<InternalErrorDTO> handleUserInputException() {
-        return errorCodeResolver.resolveException(new UserInputException("Wrong login details.", ErrorTypeCode.BAD_CREDENTIALS, LoginRequestDTO.class.getTypeName()));
+        return errorCodeResolver.resolveException(new UserInputException("Wrong login details.", ErrorTypeCode.BAD_CREDENTIALS, LoginRequestDTO.class));
     }
 }

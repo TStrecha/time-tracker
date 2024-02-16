@@ -6,6 +6,6 @@ import lombok.experimental.UtilityClass;
 public class FilterUtils {
 
     public static String enrichLikeStatements(String input){
-        return "%" + input.toLowerCase() + "%";
+        return STR."%\{input.toLowerCase()}%";
     }
 }
