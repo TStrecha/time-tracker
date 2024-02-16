@@ -3,6 +3,7 @@ package cz.tstrecha.timetracker.controller.v1;
 import cz.tstrecha.timetracker.annotation.InjectLoggedUser;
 import cz.tstrecha.timetracker.annotation.InjectUserContext;
 import cz.tstrecha.timetracker.constant.Constants;
+import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.PasswordChangeDTO;
@@ -24,13 +25,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @Tag(name = "user-api")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "user", produces = {APPLICATION_JSON_VALUE})
+@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "/user", produces = {APPLICATION_JSON_VALUE})
 public class UserController {
 
     private final UserService userService;
@@ -49,22 +52,25 @@ public class UserController {
     public ResponseEntity<RelationshipDTO> createRelationship(@RequestBody RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO,
                                                               @InjectLoggedUser LoggedUser loggedUser,
                                                               @InjectUserContext UserContext userContext){
-        return new ResponseEntity<>(userService.createRelationship(relationshipCreateUpdateRequestDTO, loggedUser, userContext),
-                HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.createRelationship(relationshipCreateUpdateRequestDTO, loggedUser, userContext), HttpStatus.CREATED);
     }
 
     @PutMapping("/relationship")
     public ResponseEntity<RelationshipDTO> editRelationship(@RequestBody RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO,
                                  @InjectLoggedUser LoggedUser loggedUser,
                                  @InjectUserContext UserContext userContext){
-        return new ResponseEntity<>(userService.updateRelationship(relationshipCreateUpdateRequestDTO,loggedUser,userContext),
-                HttpStatus.OK);
+        return new ResponseEntity<>(userService.updateRelationship(relationshipCreateUpdateRequestDTO,loggedUser,userContext), HttpStatus.OK);
     }
 
     @PutMapping("/context")
     public ResponseEntity<LoginResponseDTO> changeContext(@RequestParam Long id,
-                                                          @InjectUserContext UserContext userContext){
-        return new ResponseEntity<>(userService.changeContext(id, userContext), HttpStatus.OK);
+                                                          @InjectLoggedUser LoggedUser loggedUser){
+        return new ResponseEntity<>(userService.changeContext(id, loggedUser), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/context")
+    public ResponseEntity<List<ContextUserDTO>> getAvailableContexts(@InjectLoggedUser LoggedUser loggedUser){
+        return new ResponseEntity<>(userService.getActiveRelationships(loggedUser), HttpStatus.OK);
     }
 
     @PutMapping("/change-password")

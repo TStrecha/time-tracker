@@ -2,9 +2,7 @@ package cz.tstrecha.timetracker.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tstrecha.timetracker.config.AppConfig;
-import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.controller.exception.GenericUnauthorizedException;
-import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
@@ -12,6 +10,7 @@ import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
+import cz.tstrecha.timetracker.service.ContextService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -35,6 +34,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private static final String USER_ID_CLAIM_KEY = "userId";
     private static final String AUTHORIZED_AS_USER_CLAIM_KEY = "authorizedAsUserId";
 
+    private final ContextService contextService;
+
     private final UserMapper userMapper;
 
     private final UserRepository userRepository;
@@ -49,7 +50,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 user.getUserRelationshipGiving().stream().filter(relation -> relation.getTo() == relation.getFrom())
                         .findFirst()
                         .map(userMapper::userRelationshipEntityToContextUserDTO)
-                        .orElseThrow(() -> new IllegalArgumentException("No relationship between the same user found for user [" + user.getId() + "]"))
+                        .orElseThrow(() -> new IllegalArgumentException(STR."No relationship between the same user found for user [\{user.getId()}]"))
                 : loggedAs;
 
         var claims = Map.of(USER_CONTEXT_CLAIM_KEY, userMapper.toContext(user, contextUserForLoggedAs));
@@ -59,7 +60,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .setClaims(claims)
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + appConfig.getAuth().getTokenDuration().toMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + appConfig.getAuth().getAccessTokenDuration().toMillis()))
                 .signWith(signInKey, appConfig.getAuth().getSignatureAlgorithm())
                 .compact();
     }
@@ -108,14 +109,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var userId = claims.get(USER_ID_CLAIM_KEY, Long.class);
         var authorizedAsUserId = claims.get(AUTHORIZED_AS_USER_CLAIM_KEY, Long.class);
 
-        var user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + userId + "]"));
+        var user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(STR."User entity not found by to id [\{userId}]"));
+        var newContext = contextService.getContextFromUser(user, authorizedAsUserId);
 
-        var userRelationship = user.getUserRelationshipReceiving().stream()
-                .filter(relation -> relation.getFrom().getId().equals(authorizedAsUserId))
-                .findFirst()
-                .orElseThrow(() -> new PermissionException("User doesn't have permission to change context to id [" + authorizedAsUserId + "]", ErrorTypeCode.USER_DOES_NOT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
-
-        return new LoginResponseDTO(true, generateToken(user, userMapper.userRelationshipEntityToContextUserDTO(userRelationship)), token);
+        return new LoginResponseDTO(true, generateToken(user, newContext), token);
     }
 
     @Override

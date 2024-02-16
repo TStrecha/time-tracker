@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface UserSettingsRepository extends JpaRepository<UserSettingsEntity, Long> {
 
-    @Query("SELECT us FROM UserSettings us WHERE us.user = :user AND (us.validTo IS NULL OR us.validTo > NOW())")
+    @Query("SELECT us FROM user_settings us WHERE us.user = :user AND (us.validTo IS NULL OR us.validTo > NOW())")
     List<UserSettingsEntity> findActiveUserSettings(@Param("user") UserEntity user);
 
     boolean existsByUserAndName(UserEntity user, String name);

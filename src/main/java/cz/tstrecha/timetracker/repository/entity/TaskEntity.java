@@ -25,7 +25,7 @@ import java.time.OffsetDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "Task")
+@Entity(name = "task")
 @Table(
         uniqueConstraints = @UniqueConstraint(columnNames = {"customId", "user_id"}),
         indexes = {

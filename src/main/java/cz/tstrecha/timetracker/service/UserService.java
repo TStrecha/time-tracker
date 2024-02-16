@@ -1,6 +1,7 @@
 package cz.tstrecha.timetracker.service;
 
 import cz.tstrecha.timetracker.constant.UserRole;
+import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
@@ -11,6 +12,8 @@ import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.UserUpdateDTO;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -45,12 +48,11 @@ public interface UserService {
     RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO, LoggedUser loggedUser, UserContext userContext);
 
     /**
-     *
      * @param id
-     * @param userContext
+     * @param loggedUser
      * @return
      */
-    LoginResponseDTO changeContext(Long id, UserContext userContext);
+    LoginResponseDTO changeContext(Long id, LoggedUser loggedUser);
 
     /**
      *
@@ -73,4 +75,10 @@ public interface UserService {
      * @return
      */
     LoginResponseDTO changePassword(PasswordChangeDTO passwordChangeDTO, UserContext userContext);
+
+    /**
+     * @param loggedUser
+     * @return
+     */
+    List<ContextUserDTO> getActiveRelationships(LoggedUser loggedUser);
 }

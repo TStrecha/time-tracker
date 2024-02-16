@@ -25,6 +25,7 @@ import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import cz.tstrecha.timetracker.repository.entity.UserSettingsEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
+import cz.tstrecha.timetracker.service.ContextService;
 import cz.tstrecha.timetracker.service.TransactionRunner;
 import cz.tstrecha.timetracker.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import static java.lang.StringTemplate.STR;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -52,6 +55,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final AuthenticationService authenticationService;
+    private final ContextService contextService;
 
     private final UserMapper userMapper;
     private final RelationshipMapper relationshipMapper;
@@ -67,7 +71,7 @@ public class UserServiceImpl implements UserService {
                 registrationRequest.getCompanyName());
 
         if (userRepository.existsByEmail(registrationRequest.getEmail())) {
-            throw new UserInputException("User with this email already exists.", ErrorTypeCode.USER_EMAIL_EXISTS, "UserRegistrationRequestDTO");
+            throw new UserInputException("User with this email already exists.", ErrorTypeCode.USER_EMAIL_EXISTS, UserRegistrationRequestDTO.class);
         }
 
         validatePassword(registrationRequest.getPassword());
@@ -99,9 +103,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request) {
         var from = userRepository.findById(request.getFromId())
-                .orElseThrow(() -> new EntityNotFoundException("User entity not found by from id [" + request.getFromId() + "]"));
+                .orElseThrow(() -> new EntityNotFoundException(STR."User entity not found by from id [\{request.getFromId()}]"));
         var to = userRepository.findById(request.getToId())
-                .orElseThrow(() -> new EntityNotFoundException("User entity not found by to id [" + request.getToId() + "]"));
+                .orElseThrow(() -> new EntityNotFoundException(STR."User entity not found by to id [\{request.getToId()}]"));
 
         if (userRelationshipRepository.existsByFromAndTo(from, to)) {
             throw new UserInputException("Relationship already exists", ErrorTypeCode.RELATIONSHIP_ALREADY_EXISTS, RelationshipCreateUpdateRequestDTO.class);
@@ -124,16 +128,16 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
-            throw new PermissionException("You can only edit your relationships.",ErrorTypeCode.ATTEMPTED_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE, "RelationshipCreateUpdateRequestDTO");
+            throw new PermissionException("You can only edit your relationships.",ErrorTypeCode.ATTEMPTED_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE, RelationshipCreateUpdateRequestDTO.class);
         }
         if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
             throw new UserInputException("You cannot edit a relationship between other users",
                     ErrorTypeCode.RELATIONSHIP_EDIT_WITHOUT_PERMISSION,
-                    "RelationshipCreateUpdateRequestDTO");
+                    RelationshipCreateUpdateRequestDTO.class);
         }
 
         var relation = userRelationshipRepository.findById(request.getId())
-                .orElseThrow(() -> new EntityNotFoundException("Relationship entity not found by id [" + request.getId() + "]"));
+                .orElseThrow(() -> new EntityNotFoundException(STR."Relationship entity not found by id [\{request.getId()}]"));
         relationshipMapper.updateRelationship(request, relation);
         relation = userRelationshipRepository.save(relation);
         return relationshipMapper.toDTOFromReceiving(relation);
@@ -141,16 +145,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public LoginResponseDTO changeContext(Long id, UserContext userContext) {
-        var contextUserDTO = userContext.getActiveRelationshipsReceiving().stream()
-                .filter(relation -> relation.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new PermissionException("User dont have permission to change context to id [" + id + "]", ErrorTypeCode.USER_DOES_NOT_HAVE_PERMISSION_TO_CHANGE_CONTEXT));
+    public LoginResponseDTO changeContext(Long id, LoggedUser loggedUser) {
+        var newContext = contextService.getContextFromUser(loggedUser.getUserEntity(), id);
 
-        var userEntity = userRepository.findById(userContext.getId()).orElseThrow();
+        var token = authenticationService.generateToken(loggedUser.getUserEntity(), newContext);
+        var refreshToken = authenticationService.generateRefreshToken(loggedUser.getUserEntity().getId(), newContext.getId());
 
-        var token = authenticationService.generateToken(userEntity, contextUserDTO);
-        var refreshToken = authenticationService.generateRefreshToken(userEntity.getId(), contextUserDTO.getId());
         return new LoginResponseDTO(true, token, refreshToken);
     }
 
@@ -172,7 +172,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public LoginResponseDTO loginUser(LoginRequestDTO loginRequest) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-        var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + loginRequest.getEmail() + "]"));
+        var user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException(STR."No user exists for email [\{loginRequest.getEmail()}]"));
         return generateLoginResponseDTO(user, null);
     }
 
@@ -189,6 +189,14 @@ public class UserServiceImpl implements UserService {
         return generateLoginResponseDTO(user, userContext.getLoggedAs());
     }
 
+    @Override
+    public List<ContextUserDTO> getActiveRelationships(LoggedUser loggedUser) {
+        if(loggedUser.getUserEntity().getRole() == UserRole.ADMIN) {
+            return userRepository.findAll().stream().map(userMapper::userToContextUserDTO).toList();
+        }
+        return loggedUser.getUserEntity().getActiveRelationshipsReceiving().stream().map(userMapper::userRelationshipEntityToContextUserDTO).toList();
+    }
+
     private LoginResponseDTO generateLoginResponseDTO(UserEntity user, ContextUserDTO contextUserDTO){
         var token = authenticationService.generateToken(user, contextUserDTO);
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), contextUserDTO == null ? user.getId() : contextUserDTO.getId());
@@ -200,24 +208,24 @@ public class UserServiceImpl implements UserService {
             if (Strings.isEmpty(firstName) || Strings.isEmpty(lastName)) {
                 throw new UserInputException("Person has to have first name and last name filled in.",
                         ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
-                        "UserUpdateDTO");
+                        UserUpdateDTO.class);
             }
         } else if(accountType == AccountType.COMPANY && (Strings.isEmpty(companyName))){
                 throw new UserInputException("Company has to have company name filled in.",
                         ErrorTypeCode.COMPANY_NAME_MISSING,
-                        "UserUpdateDTO");
+                        UserUpdateDTO.class);
         }
     }
 
     private void validatePassword(String password){
         if (IntStream.of(0, password.length() - 1).noneMatch(i -> Character.isDigit(password.charAt(i)))) {
-            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOES_NOT_CONTAIN_DIGIT, "PasswordChangeDTO");
+            throw new UserInputException("Password should contain at least 1 digit.", ErrorTypeCode.PASSWORD_DOES_NOT_CONTAIN_DIGIT, PasswordChangeDTO.class);
         }
     }
 
     private UserEntity authenticateAndRetrieveUser(String email, String password) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("No user exists for email [" + email + "]"));
+                .orElseThrow(() -> new UsernameNotFoundException(STR."No user exists for email [\{email}]"));
     }
 }

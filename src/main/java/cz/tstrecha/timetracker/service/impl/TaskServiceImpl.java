@@ -53,7 +53,7 @@ public class TaskServiceImpl implements TaskService {
         } else if (identifierType == IdentifierType.CUSTOM_ID) {
             taskEntity.setCustomId(Long.valueOf(identifierValue));
         } else {
-            throw new IllegalStateException("Identifier type [" + identifierType.name() + "] is not supported.");
+            throw new IllegalStateException(STR."Identifier type [\{identifierType.name()}] is not supported.");
         }
         taskEntity.setStatus(TaskStatus.NEW);
         taskEntity = taskRepository.save(taskEntity);
@@ -93,8 +93,8 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskDTO deleteTask(Long id, LoggedUser loggedUser) {
         var taskEntity = taskRepository.findByIdAndUser(id, loggedUser.getUserEntity())
-                .orElseThrow(() -> new UserInputException("Cannot find task with id[" + id + "]",
-                        ErrorTypeCode.TASK_NOT_FOUND_BY_ID, "TaskCreateRequestDTO"));
+                .orElseThrow(() -> new UserInputException(STR."Cannot find task with id[\{id}]",
+                        ErrorTypeCode.TASK_NOT_FOUND_BY_ID, TaskCreateRequestDTO.class));
         taskEntity.setActive(false);
         taskRepository.save(taskEntity);
         return taskMapper.toDTO(taskEntity);
@@ -104,8 +104,8 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskDTO reactivateTask(Long id, LoggedUser loggedUser) {
         var taskEntity = taskRepository.findByIdAndUser(id, loggedUser.getUserEntity())
-                .orElseThrow(() -> new UserInputException("Cannot find task with id[" + id + "]",
-                        ErrorTypeCode.TASK_NOT_FOUND_BY_ID, "TaskCreateRequestDTO"));
+                .orElseThrow(() -> new UserInputException(STR."Cannot find task with id [\{id}]",
+                        ErrorTypeCode.TASK_NOT_FOUND_BY_ID, TaskCreateRequestDTO.class));
         taskEntity.setActive(true);
         taskRepository.save(taskEntity);
         return taskMapper.toDTO(taskEntity);
@@ -117,7 +117,8 @@ public class TaskServiceImpl implements TaskService {
         if (query.length() < Constants.MIN_SEARCH_LENGTH){
             return List.of();
         }
-        var databaseSearchQuery = "%" + StringUtils.strip(query) + "%";
+
+        var databaseSearchQuery = STR."%\{StringUtils.strip(query)}%";
         return taskRepository.searchForTasks(databaseSearchQuery, loggedUser.getUserEntity().getId(), limit)
                 .stream().map(taskMapper::toDTO).toList();
     }
@@ -134,7 +135,7 @@ public class TaskServiceImpl implements TaskService {
 
     private TaskEntity getTaskOrFail(Long id, UserEntity userEntity) {
         return taskRepository.findByIdAndUser(id, userEntity)
-                .orElseThrow(() -> new UserInputException("Cannot find task with id [" + id+ "]",
+                .orElseThrow(() -> new UserInputException(STR."Cannot find task with id [\{id}]",
                         ErrorTypeCode.TASK_NOT_FOUND_BY_ID, TaskCreateRequestDTO.class));
     }
 }

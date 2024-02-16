@@ -19,10 +19,9 @@ public class UserContextParameterResolver implements HandlerMethodArgumentResolv
     }
 
     @Override
-    public UserContext resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+    public UserContext resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         if(parameter.getParameterType() != UserContext.class){
-            throw new IllegalArgumentException("Parameter annotated InjectUserContext should only be of type UserContext. " +
-                    "Type found [" + parameter.getParameterType() + "]");
+            throw new IllegalArgumentException(STR."Parameter annotated InjectUserContext should only be of type UserContext. Type found [\{parameter.getParameterType()}]");
         }
         var annotation = parameter.getParameterAnnotation(InjectUserContext.class);
         if(annotation == null){

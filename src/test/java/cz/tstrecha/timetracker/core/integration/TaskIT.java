@@ -34,7 +34,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         var apiResult = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -65,7 +65,7 @@ class TaskIT extends IntegrationTest {
         var name = "someName";
 
         var apiResult = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task/" + identifier.name() + "/" + name)
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task/\{identifier.name()}/\{name}")
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andReturn()
@@ -93,7 +93,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -112,7 +112,7 @@ class TaskIT extends IntegrationTest {
         request.setActive(false);
 
         var apiResultUpdate = mvc.perform(
-                        put(Constants.V1_CONTROLLER_ROOT + "/task")
+                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -141,7 +141,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -160,7 +160,7 @@ class TaskIT extends IntegrationTest {
         request.setActive(false);
 
         var response = mvc.perform(
-                        put(Constants.V1_CONTROLLER_ROOT + "/task")
+                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -183,7 +183,7 @@ class TaskIT extends IntegrationTest {
         request.setActive(false);
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -202,7 +202,7 @@ class TaskIT extends IntegrationTest {
         request.setActive(false);
 
         var response = mvc.perform(
-                        put(Constants.V1_CONTROLLER_ROOT + "/task")
+                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -226,7 +226,7 @@ class TaskIT extends IntegrationTest {
         request.setStatus(TaskStatus.DONE);
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -245,7 +245,7 @@ class TaskIT extends IntegrationTest {
         request.setActive(false);
 
         var response = mvc.perform(
-                        put(Constants.V1_CONTROLLER_ROOT + "/task")
+                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -268,7 +268,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         var createdTaskResponse = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -279,7 +279,7 @@ class TaskIT extends IntegrationTest {
         var newStatus = TaskStatus.IN_PROGRESS;
 
         var updatedTaskResponse = mvc.perform(
-                        patch(Constants.V1_CONTROLLER_ROOT + "/task/1/" + newStatus.name())
+                        patch(STR."\{Constants.V1_CONTROLLER_ROOT}/task/1/\{newStatus.name()}")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -309,7 +309,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -320,7 +320,7 @@ class TaskIT extends IntegrationTest {
         var newStatus = TaskStatus.IN_PROGRESS;
 
         var updatedTaskResponse = mvc.perform(
-                        patch(Constants.V1_CONTROLLER_ROOT + "/task/2/" + newStatus.name())
+                        patch(STR."\{Constants.V1_CONTROLLER_ROOT}/task/2/\{newStatus.name()}")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -343,7 +343,7 @@ class TaskIT extends IntegrationTest {
         request.setActive(false);
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -354,7 +354,7 @@ class TaskIT extends IntegrationTest {
         var newStatus = TaskStatus.IN_PROGRESS;
 
         var updatedTaskResponse = mvc.perform(
-                        patch(Constants.V1_CONTROLLER_ROOT + "/task/1/" + newStatus.name())
+                        patch(STR."\{Constants.V1_CONTROLLER_ROOT}/task/1/\{newStatus.name()}")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -377,7 +377,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         var createdTaskResponse = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -386,7 +386,7 @@ class TaskIT extends IntegrationTest {
                 .getResponse();
 
         var deletedTaskResponse = mvc.perform(
-                        delete(Constants.V1_CONTROLLER_ROOT + "/task/1")
+                        delete(STR."\{Constants.V1_CONTROLLER_ROOT}/task/1")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -416,7 +416,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -425,7 +425,7 @@ class TaskIT extends IntegrationTest {
                 .getResponse();
 
         var deletedTaskResponse = mvc.perform(
-                        delete(Constants.V1_CONTROLLER_ROOT + "/task/2")
+                        delete(STR."\{Constants.V1_CONTROLLER_ROOT}/task/2")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -449,7 +449,7 @@ class TaskIT extends IntegrationTest {
         request.setActive(false);
 
         var createdTaskResponse = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -458,7 +458,7 @@ class TaskIT extends IntegrationTest {
                 .getResponse();
 
         var reactivatedTask = mvc.perform(
-                        patch(Constants.V1_CONTROLLER_ROOT + "/task/1/reactivate")
+                        patch(STR."\{Constants.V1_CONTROLLER_ROOT}/task/1/reactivate")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -490,7 +490,7 @@ class TaskIT extends IntegrationTest {
         var request = createTaskRequest();
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/task")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/task")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -499,7 +499,7 @@ class TaskIT extends IntegrationTest {
                 .getResponse();
 
         var deletedTaskResponse = mvc.perform(
-                        patch(Constants.V1_CONTROLLER_ROOT + "/task/2/reactivate")
+                        patch(STR."\{Constants.V1_CONTROLLER_ROOT}/task/2/reactivate")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(user, null)))
@@ -509,7 +509,7 @@ class TaskIT extends IntegrationTest {
 
         var exceptionDTO = objectMapper.readValue(deletedTaskResponse.getContentAsString(), InternalErrorDTO.class);
         Assertions.assertEquals("UserInputException", exceptionDTO.getException());
-        Assertions.assertEquals("Cannot find task with id[2]", exceptionDTO.getExceptionMessage());
+        Assertions.assertEquals("Cannot find task with id [2]", exceptionDTO.getExceptionMessage());
         Assertions.assertEquals("TaskCreateRequestDTO", exceptionDTO.getEntity());
         Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }

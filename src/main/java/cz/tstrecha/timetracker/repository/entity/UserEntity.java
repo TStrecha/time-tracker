@@ -33,7 +33,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "AppUser")
+@Entity(name = "app_user")
 @Table(indexes = @Index(name = "user_id_index", columnList = "id"))
 public class UserEntity implements UserDetails {
 
@@ -79,6 +79,11 @@ public class UserEntity implements UserDetails {
     private OffsetDateTime createdAt;
     @UpdateTimestamp
     private OffsetDateTime modifiedAt;
+
+    @JsonIgnore
+    public String getDisplayName() {
+        return getAccountType() == AccountType.PERSON ? STR."\{getFirstName()} \{getLastName()}" : getCompanyName();
+    }
 
     @JsonIgnore
     public List<UserRelationshipEntity> getActiveRelationshipsReceiving() {

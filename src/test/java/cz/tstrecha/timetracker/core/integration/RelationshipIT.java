@@ -10,7 +10,6 @@ import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
-import cz.tstrecha.timetracker.service.AuthenticationService;
 import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -41,7 +40,7 @@ class RelationshipIT extends IntegrationTest {
         request.setSecureValues(false);
 
         var apiResult = mvc.perform(
-                post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
+                post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(request))
                         .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
@@ -72,7 +71,7 @@ class RelationshipIT extends IntegrationTest {
         request.setSecureValues(false);
 
         var response = mvc.perform(
-                    post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
+                    post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .content(objectMapper.writeValueAsString(request))
                             .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
@@ -101,7 +100,7 @@ class RelationshipIT extends IntegrationTest {
         request.setSecureValues(false);
 
         mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
@@ -112,7 +111,7 @@ class RelationshipIT extends IntegrationTest {
                 .getResponse();
 
         var response = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
@@ -141,7 +140,7 @@ class RelationshipIT extends IntegrationTest {
         request.setSecureValues(false);
 
         var response = mvc.perform(
-                        post(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
+                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
@@ -181,7 +180,7 @@ class RelationshipIT extends IntegrationTest {
         request.setSecureValues(true);
 
         var apiResult = mvc.perform(
-                        put(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
+                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
@@ -221,7 +220,7 @@ class RelationshipIT extends IntegrationTest {
         request.setSecureValues(true);
 
         var response = mvc.perform(
-                        put(Constants.V1_CONTROLLER_ROOT + "/user/relationship")
+                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
                                 .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
@@ -238,6 +237,6 @@ class RelationshipIT extends IntegrationTest {
     }
 
     private String getDisplayName(UserEntity user){
-        return user.getAccountType() == AccountType.PERSON ? user.getFirstName() + " " + user.getLastName() : user.getCompanyName();
+        return user.getAccountType() == AccountType.PERSON ? STR."\{user.getFirstName()} \{user.getLastName()}" : user.getCompanyName();
     }
 }

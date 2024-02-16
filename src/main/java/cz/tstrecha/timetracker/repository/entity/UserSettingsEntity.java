@@ -23,7 +23,7 @@ import java.time.OffsetDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "UserSettings")
+@Entity(name = "user_settings")
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "name"})
 })

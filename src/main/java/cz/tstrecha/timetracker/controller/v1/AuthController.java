@@ -24,7 +24,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Tag(name = "user-api")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "auth", produces = {APPLICATION_JSON_VALUE})
+@RequestMapping(value = Constants.V1_CONTROLLER_ROOT + "/auth", produces = {APPLICATION_JSON_VALUE})
 public class AuthController {
 
     private final UserService userService;
