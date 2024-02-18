@@ -1,7 +1,6 @@
 package cz.tstrecha.timetracker.controller.v1;
 
 import cz.tstrecha.timetracker.annotation.InjectLoggedUser;
-import cz.tstrecha.timetracker.annotation.PermissionCheck;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.SettingsCreateUpdateDTO;
@@ -12,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,14 +30,14 @@ public class SettingsController {
     private final SettingsService settingsService;
 
     @PostMapping
-    @PermissionCheck("settings.create")
+    @PreAuthorize("hasPermission(#loggedUser, 'setings.create')")
     public ResponseEntity<SettingsCreateUpdateDTO> createUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
                                                                      @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(settingsService.createSetting(setting, loggedUser), HttpStatus.CREATED);
     }
 
     @PutMapping
-    @PermissionCheck("settings.create")
+    @PreAuthorize("hasPermission(#setting.id, 'settings', 'setings.update')")
     public ResponseEntity<SettingsCreateUpdateDTO> updateUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
                                                                      @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(settingsService.updateSetting(setting, loggedUser), HttpStatus.OK);

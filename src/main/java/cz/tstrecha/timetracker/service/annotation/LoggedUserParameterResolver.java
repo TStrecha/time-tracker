@@ -33,14 +33,14 @@ public class LoggedUserParameterResolver implements HandlerMethodArgumentResolve
     @Transactional(readOnly = true)
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         if(parameter.getParameterType() != LoggedUser.class){
-            throw new IllegalArgumentException(STR."""
-                Parameter annotated InjectLoggedUser should only be of type LoggedUser.Type found [\{parameter.getParameterType()}]
-            """);
+            throw new IllegalArgumentException(STR."Parameter annotated InjectLoggedUser should only be of type LoggedUser.Type found [\{parameter.getParameterType()}]");
         }
+
         var annotation = parameter.getParameterAnnotation(InjectLoggedUser.class);
         if (annotation == null){
             return null;
         }
+
         var userContext = ContextUtils.retrieveContextMandatory();
         var userEntity = annotation.fillUserEntity() ?
                 userRepository.findById(userContext.getId())

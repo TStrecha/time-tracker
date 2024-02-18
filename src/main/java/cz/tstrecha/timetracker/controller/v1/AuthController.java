@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker.controller.v1;
 
+import cz.tstrecha.timetracker.annotation.CustomPermissionCheck;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
@@ -32,16 +33,19 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
+    @CustomPermissionCheck
     public ResponseEntity<Long> registerUser(@RequestBody @Valid UserRegistrationRequestDTO registrationRequest){
         return new ResponseEntity<>(userService.createUser(registrationRequest, UserRole.USER).getId(), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
+    @CustomPermissionCheck
     public ResponseEntity<LoginResponseDTO> loginUser(@RequestBody @Valid LoginRequestDTO loginRequest){
         return new ResponseEntity<>(userService.loginUser(loginRequest), HttpStatus.OK);
     }
 
     @PostMapping("/refresh")
+    @CustomPermissionCheck
     public ResponseEntity<LoginResponseDTO> refreshToken(@RequestBody String token){
         return new ResponseEntity<>(authenticationService.refreshToken(token), HttpStatus.OK);
     }

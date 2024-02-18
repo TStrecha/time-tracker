@@ -1,4 +1,4 @@
-package cz.tstrecha.timetracker.core;
+package cz.tstrecha.timetracker.unit;
 
 
 import cz.tstrecha.timetracker.controller.exception.PermissionException;

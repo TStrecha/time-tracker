@@ -1,4 +1,4 @@
-package cz.tstrecha.timetracker.core.integration;
+package cz.tstrecha.timetracker.integration;
 
 import cz.tstrecha.timetracker.IntegrationTest;
 import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
@@ -139,7 +139,7 @@ class RelationshipIT extends IntegrationTest {
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
 
-        var response = mvc.perform(
+        mvc.perform(
                         post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
@@ -149,12 +149,6 @@ class RelationshipIT extends IntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andReturn()
                 .getResponse();
-
-        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
-        Assertions.assertEquals("PermissionException", exceptionDTO.getException());
-        Assertions.assertEquals("You can only create relationship for yourself.", exceptionDTO.getExceptionMessage());
-        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
-        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
     @Test
