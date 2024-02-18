@@ -62,7 +62,6 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/{newStatus}")
-    @PreAuthorize("hasPermission(#id, 'task', 'task.update')")
     public ResponseEntity<TaskDTO> changeTaskStatus(@PathVariable("id") Long id,
                                                     @PathVariable("newStatus") TaskStatus newStatus,
                                                     @InjectLoggedUser LoggedUser loggedUser){
@@ -70,7 +69,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasPermission(#id, 'task', 'task.update')")
+    @PreAuthorize("isFullyAuthenticated()")
     public ResponseEntity<TaskDTO> deleteTask(@PathVariable("id") Long id, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.deleteTask(id, loggedUser), HttpStatus.OK);
     }
