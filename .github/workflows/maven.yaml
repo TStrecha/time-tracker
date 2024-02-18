@@ -45,6 +45,8 @@ jobs:
       - name: Build with Maven
         run: mvn -B package -Dspring.profiles.active=testprod --file pom.xml
       - name: Test - Unit
-        run: mvn test -Dtest=!*IT #This stage should run any integration test, thus won't start spring boot, active profiles are not present
+        run: mvn test -Dtest=**.unit.** # This stage should run any unit test, thus won't start spring boot => active profiles are not present
       - name: Test - Integration
-        run: mvn test -Dtest=*IT -Dspring.profiles.active=testprod
+        run: mvn test -Dtest=**.integration.** -Dspring.profiles.active=testprod
+      - name: Test - Security
+        run: mvn test -Dtest=**.security.** -Dspring.profiles.active=testprod

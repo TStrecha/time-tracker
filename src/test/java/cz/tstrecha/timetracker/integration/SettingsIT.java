@@ -1,4 +1,4 @@
-package cz.tstrecha.timetracker.core.integration;
+package cz.tstrecha.timetracker.integration;
 
 import cz.tstrecha.timetracker.IntegrationTest;
 import cz.tstrecha.timetracker.constant.ErrorTypeCode;

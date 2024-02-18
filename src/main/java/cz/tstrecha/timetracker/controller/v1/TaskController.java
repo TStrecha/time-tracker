@@ -1,7 +1,6 @@
 package cz.tstrecha.timetracker.controller.v1;
 
 import cz.tstrecha.timetracker.annotation.InjectLoggedUser;
-import cz.tstrecha.timetracker.annotation.PermissionCheck;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.constant.IdentifierType;
 import cz.tstrecha.timetracker.constant.TaskStatus;
@@ -16,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -41,27 +41,28 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    @PermissionCheck("task.create")
-    public ResponseEntity<TaskDTO> createTask(@RequestBody TaskCreateRequestDTO task, @InjectLoggedUser LoggedUser user){
-        return new ResponseEntity<>(taskService.createTask(task,user), HttpStatus.CREATED);
+    @PreAuthorize("hasPermission(#loggedUser, 'task.create')")
+    public ResponseEntity<TaskDTO> createTask(@RequestBody TaskCreateRequestDTO task, @InjectLoggedUser LoggedUser loggedUser){
+        return new ResponseEntity<>(taskService.createTask(task, loggedUser), HttpStatus.CREATED);
     }
 
     @PostMapping("/{identifier}/{identifierValue}")
+    @PreAuthorize("hasPermission(#loggedUser, 'task.create')")
     public ResponseEntity<TaskDTO> createEmptyTask(@PathVariable("identifier") IdentifierType identifier,
                                                    @PathVariable("identifierValue") String identifierValue,
-                                                   @InjectLoggedUser LoggedUser user){
-        return new ResponseEntity<>(taskService.createEmptyTask(identifier,identifierValue,user), HttpStatus.CREATED);
+                                                   @InjectLoggedUser LoggedUser loggedUser){
+        return new ResponseEntity<>(taskService.createEmptyTask(identifier, identifierValue, loggedUser), HttpStatus.CREATED);
     }
 
     @PutMapping
-    @PermissionCheck("task.update")
+    @PreAuthorize("hasPermission(#taskCreateRequestDTO.id, 'task', 'task.update')")
     public ResponseEntity<TaskDTO> updateTask(@RequestBody TaskCreateRequestDTO taskCreateRequestDTO,
                                               @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.updateTask(taskCreateRequestDTO, loggedUser), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/{newStatus}")
-    @PermissionCheck("task.update")
+    @PreAuthorize("hasPermission(#id, 'task', 'task.update')")
     public ResponseEntity<TaskDTO> changeTaskStatus(@PathVariable("id") Long id,
                                                     @PathVariable("newStatus") TaskStatus newStatus,
                                                     @InjectLoggedUser LoggedUser loggedUser){
@@ -69,26 +70,27 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    @PermissionCheck("task.update")
+    @PreAuthorize("hasPermission(#id, 'task', 'task.update')")
     public ResponseEntity<TaskDTO> deleteTask(@PathVariable("id") Long id, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.deleteTask(id, loggedUser), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/reactivate")
-    @PermissionCheck("task.update")
+    @PreAuthorize("hasPermission(#id, 'task', 'task.update')")
     public ResponseEntity<TaskDTO> reactivateTask(@PathVariable("id") Long id, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.reactivateTask(id, loggedUser), HttpStatus.OK);
     }
 
     @GetMapping("/search/{query}")
+    @PreAuthorize("hasPermission(#loggedUser, 'task.read')")
     public ResponseEntity<List<TaskDTO>> searchForTasks(@PathVariable("query") String query,
                                                         @RequestParam(defaultValue = "5", required = false) Long limit,
-                                                        @InjectLoggedUser LoggedUser user){
-        return new ResponseEntity<>(taskService.searchForTasks(query,limit,user), HttpStatus.OK);
+                                                        @InjectLoggedUser LoggedUser loggedUser){
+        return new ResponseEntity<>(taskService.searchForTasks(query, limit, loggedUser), HttpStatus.OK);
     }
 
     @PostMapping("/list")
-    @PermissionCheck("task.read")
+    @PreAuthorize("hasPermission(#loggedUser, 'task.read')")
     public ResponseEntity<Page<TaskDTO>> listTasks(@RequestBody TaskFilter taskFilter, @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(taskService.listTasks(taskFilter, loggedUser), HttpStatus.OK);
     }

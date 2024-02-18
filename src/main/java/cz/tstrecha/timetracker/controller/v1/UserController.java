@@ -2,6 +2,7 @@ package cz.tstrecha.timetracker.controller.v1;
 
 import cz.tstrecha.timetracker.annotation.InjectLoggedUser;
 import cz.tstrecha.timetracker.annotation.InjectUserContext;
+import cz.tstrecha.timetracker.annotation.CustomPermissionCheck;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
 import cz.tstrecha.timetracker.dto.LoggedUser;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,16 +41,19 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
+    @CustomPermissionCheck
     public ResponseEntity<UserContext> loggedUserDetails(@InjectUserContext UserContext user){
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PutMapping
+    @PreAuthorize("hasPermission(#userContext, 'user.update')")
     public ResponseEntity<LoginResponseDTO> changeUserDetails(@RequestBody UserUpdateDTO userUpdateDTO, @InjectUserContext UserContext userContext){
         return new ResponseEntity<>(userService.changeUserDetails(userUpdateDTO, userContext), HttpStatus.OK);
     }
 
     @PostMapping("/relationship")
+    @PreAuthorize("hasPermission(#userContext, 'relationship.create')")
     public ResponseEntity<RelationshipDTO> createRelationship(@RequestBody RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO,
                                                               @InjectLoggedUser LoggedUser loggedUser,
                                                               @InjectUserContext UserContext userContext){
@@ -56,24 +61,29 @@ public class UserController {
     }
 
     @PutMapping("/relationship")
+    @PreAuthorize("hasPermission(#userContext, 'relationship.update')")
     public ResponseEntity<RelationshipDTO> editRelationship(@RequestBody RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO,
-                                 @InjectLoggedUser LoggedUser loggedUser,
-                                 @InjectUserContext UserContext userContext){
-        return new ResponseEntity<>(userService.updateRelationship(relationshipCreateUpdateRequestDTO,loggedUser,userContext), HttpStatus.OK);
+                                                            @InjectLoggedUser LoggedUser loggedUser,
+                                                            @InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(userService.updateRelationship(relationshipCreateUpdateRequestDTO, loggedUser, userContext), HttpStatus.OK);
     }
 
     @PutMapping("/context")
+    @CustomPermissionCheck
     public ResponseEntity<LoginResponseDTO> changeContext(@RequestParam Long id,
                                                           @InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(userService.changeContext(id, loggedUser), HttpStatus.OK);
     }
 
     @GetMapping(value = "/context")
+    @CustomPermissionCheck
     public ResponseEntity<List<ContextUserDTO>> getAvailableContexts(@InjectLoggedUser LoggedUser loggedUser){
         return new ResponseEntity<>(userService.getActiveRelationships(loggedUser), HttpStatus.OK);
     }
 
     @PutMapping("/change-password")
+    @PreAuthorize("userContext.id == userContext.loggedAs.id")
+    @CustomPermissionCheck
     public ResponseEntity<LoginResponseDTO> changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO,
                                                            @InjectUserContext UserContext userContext) {
         return new ResponseEntity<>(userService.changePassword(passwordChangeDTO, userContext), HttpStatus.OK);
