@@ -23,6 +23,7 @@ public class SettingsServiceImpl implements SettingsService {
 
     @Override
     @Transactional
+    // TODO(TS, 2024/02/20): Remove this todo.
     public SettingsCreateUpdateDTO createSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user){
         if (settingsCreateUpdateDTO.getValidTo() != null && settingsCreateUpdateDTO.getValidFrom().isAfter(settingsCreateUpdateDTO.getValidTo())){
             throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, SettingsCreateUpdateDTO.class);
