@@ -48,31 +48,6 @@ public class SettingsServiceImpl implements SettingsService {
         return settingsMapper.toDTO(newSetting);
     }
 
-    public SettingsCreateUpdateDTO test(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user){
-        if (settingsCreateUpdateDTO.getValidTo() != null && settingsCreateUpdateDTO.getValidFrom().isAfter(settingsCreateUpdateDTO.getValidTo())){
-            throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, SettingsCreateUpdateDTO.class);
-        }
-
-        if (userSettingsRepository.existsByUserAndName(user.getUserEntity(), settingsCreateUpdateDTO.getName())){
-            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, SettingsCreateUpdateDTO.class);
-        }
-
-        userSettingsRepository.findActiveUserSettings(user.getUserEntity())
-            .forEach(setting -> {
-                if (setting.getValidTo() == null){
-                    setting.setValidTo(settingsCreateUpdateDTO.getValidFrom().minusDays(1));
-                    userSettingsRepository.save(setting);
-                } else if (setting.getValidTo().isAfter(settingsCreateUpdateDTO.getValidFrom())) {
-                    throw new UserInputException("There are active settings that would new settings intersect with.", ErrorTypeCode.INTERSECTS_WITH_OTHER_SETTINGS, SettingsCreateUpdateDTO.class);
-                }
-            });
-
-        var newSetting = settingsMapper.toEntity(settingsCreateUpdateDTO, user.getUserEntity());
-        newSetting = userSettingsRepository.save(newSetting);
-
-        return settingsMapper.toDTO(newSetting);
-    }
-
     @Override
     @Transactional
     public SettingsCreateUpdateDTO updateSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user) {
