@@ -27,6 +27,9 @@
         <embedded-postgresql.version>3.0.8</embedded-postgresql.version>
         <jackson-datatype-jsr310.version>2.14.2</jackson-datatype-jsr310.version>
         <hibernate.version>6.1.7.Final</hibernate.version>
+
+        <sonar.organization>tstrecha</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
     <dependencies>
         <dependency>
