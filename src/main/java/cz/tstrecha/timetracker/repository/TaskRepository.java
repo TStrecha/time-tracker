@@ -2,11 +2,10 @@ package cz.tstrecha.timetracker.repository;
 
 import cz.tstrecha.timetracker.constant.TaskFilterField;
 import cz.tstrecha.timetracker.constant.TaskStatus;
-import cz.tstrecha.timetracker.dto.LoggedUser;
+import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.filter.TaskFilter;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity_;
-import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.util.FilterUtils;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
@@ -20,7 +19,6 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpecificationExecutor<TaskEntity> {
 
@@ -29,14 +27,12 @@ public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpec
             "AND user_id = :loggedUserId AND active = true LIMIT :resultLimit", nativeQuery = true)
     List<TaskEntity> searchForTasks(String query, Long loggedUserId, Long resultLimit);
 
-    Optional<TaskEntity> findByIdAndUser(Long id, UserEntity user);
-
-    default Page<TaskEntity> findByFilter(TaskFilter taskFilter, Pageable pageable, LoggedUser loggedUser){
+    default Page<TaskEntity> findByFilter(TaskFilter taskFilter, Pageable pageable, UserContext userContext){
         return findAll((Specification<TaskEntity>) (root, query, cb) -> {
             query.distinct(true);
 
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get(TaskEntity_.USER), loggedUser.getUserEntity()));
+            predicates.add(cb.equal(root.get(TaskEntity_.USER), userContext.getCurrentUserId()));
 
             var predicatesFromFilter = taskFilter.getFieldFilters().entrySet().stream()
                     .map(entry -> this.getPredicate(entry.getKey(), entry.getValue(), root, cb))

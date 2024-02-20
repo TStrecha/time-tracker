@@ -1,23 +1,21 @@
 package cz.tstrecha.timetracker.service;
 
-import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.SettingsCreateUpdateDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
 
 public interface SettingsService {
 
     /**
-     *
      * @param settingsCreateUpdateDTO
-     * @param user
+     * @param userContext
      * @return
      */
-    SettingsCreateUpdateDTO createSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user);
+    SettingsCreateUpdateDTO createSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, UserContext userContext);
 
     /**
-     *
      * @param settingsCreateUpdateDTO
-     * @param user
+     * @param userContext
      * @return
      */
-    SettingsCreateUpdateDTO updateSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, LoggedUser user);
+    SettingsCreateUpdateDTO updateSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, UserContext userContext);
 }

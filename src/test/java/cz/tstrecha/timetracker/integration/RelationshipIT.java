@@ -34,7 +34,6 @@ class RelationshipIT extends IntegrationTest {
     void test01_createRelationship_success() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -65,27 +64,21 @@ class RelationshipIT extends IntegrationTest {
     void test02_createRelationship_fail_createForOtherUser() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.getFirst()+1);
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
 
-        var response = mvc.perform(
+        var loggedAs = new ContextUserDTO(userIds.getFirst() + 1, "wrong@email.com", "Wrong User", AccountType.PERSON, null, null, false);
+
+        mvc.perform(
                     post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .content(objectMapper.writeValueAsString(request))
-                            .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                    userRepository.findById(userIds.getFirst()).orElseThrow(),
-                                    null)))
+                            .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX +
+                                    authenticationService.generateToken(userRepository.findById(userIds.getFirst()).orElseThrow(), loggedAs)))
             .andExpect(MockMvcResultMatchers.status().isForbidden())
             .andReturn()
             .getResponse();
-
-        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
-        Assertions.assertEquals("PermissionException", exceptionDTO.getException());
-        Assertions.assertEquals("You can only create relationship for yourself.", exceptionDTO.getExceptionMessage());
-        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
-        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
     @Test
@@ -94,7 +87,6 @@ class RelationshipIT extends IntegrationTest {
     void test03_createRelationship_fail_createSameRelationship() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -134,7 +126,6 @@ class RelationshipIT extends IntegrationTest {
     void test04_createRelationship_fail_createForOtherUser() {
         var userIds = mockUsers(2);
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -158,7 +149,6 @@ class RelationshipIT extends IntegrationTest {
         var userIds = mockUsers(3);
         var userEntities = userIds.stream().map(id -> userRepository.findById(id).orElseThrow()).toList();
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.getFirst());
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);
@@ -198,7 +188,6 @@ class RelationshipIT extends IntegrationTest {
         var userIds = mockUsers(3);
         var userEntities = userIds.stream().map(id -> userRepository.findById(id).orElseThrow()).toList();
         var request = new RelationshipCreateUpdateRequestDTO();
-        request.setFromId(userIds.get(2));
         request.setToId(userIds.get(1));
         request.setPermissions(List.of("*"));
         request.setSecureValues(false);

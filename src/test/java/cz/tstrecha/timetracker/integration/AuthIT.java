@@ -160,7 +160,7 @@ class AuthIT extends IntegrationTest {
         var responseUser = objectMapper.readValue(response.getContentAsString(), UserContext.class);
         Assertions.assertNotNull(responseUser);
         Assertions.assertNotNull(responseUser.getId());
-        Assertions.assertEquals(responseUser.getId(), responseUser.getLoggedAs().getId());
+        Assertions.assertEquals(responseUser.getId(), responseUser.getCurrentUserId());
     }
 
     @Test

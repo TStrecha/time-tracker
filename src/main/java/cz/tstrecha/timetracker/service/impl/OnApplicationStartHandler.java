@@ -3,7 +3,6 @@ package cz.tstrecha.timetracker.service.impl;
 import cz.tstrecha.timetracker.config.AppConfig;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.UserRole;
-import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.service.UserService;
@@ -13,8 +12,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.TimeZone;
 
 @Slf4j
@@ -48,12 +45,8 @@ public class OnApplicationStartHandler {
             authorizedUserRegistrationRequest.setAccountType(AccountType.PERSON);
             authorizedUserRegistrationRequest.setPassword("appuser1");
 
-            var timeTrackerCreatedUser = userService.createUser(timeTrackerRegistrationRequest, UserRole.ADMIN);
-            var authorizedCreatedUser = userService.createUser(authorizedUserRegistrationRequest, UserRole.USER);
-
-            userService.createRelationship(new RelationshipCreateUpdateRequestDTO(null, timeTrackerCreatedUser.getId(), authorizedCreatedUser.getId(),
-                    List.of("*"), OffsetDateTime.now(), null, false));
+            userService.createUser(timeTrackerRegistrationRequest, UserRole.ADMIN);
+            userService.createUser(authorizedUserRegistrationRequest, UserRole.USER);
         }
     }
-
 }

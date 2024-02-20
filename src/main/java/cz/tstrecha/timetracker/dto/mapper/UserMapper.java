@@ -2,7 +2,6 @@ package cz.tstrecha.timetracker.dto.mapper;
 
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
-import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserDTO;
@@ -58,11 +57,6 @@ public abstract class UserMapper {
     @Mapping(target = "fullName", source = "user.displayName")
     @Mapping(target = "secureValues", constant = "false")
     public abstract ContextUserDTO userToContextUserDTO(UserEntity user);
-
-    @Mapping(target = "id", source = "contextUser.id")
-    @Mapping(target = "email", source = "contextUser.email")
-    @Mapping(target = "accountType", source = "contextUser.accountType")
-    public abstract LoggedUser toLoggedUser(ContextUserDTO contextUser, UserEntity userEntity);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", ignore = true)

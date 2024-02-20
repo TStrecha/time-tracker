@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserSettingsRepository extends JpaRepository<UserSettingsEntity, Long> {
 
@@ -16,7 +15,5 @@ public interface UserSettingsRepository extends JpaRepository<UserSettingsEntity
 
     boolean existsByUserAndName(UserEntity user, String name);
 
-    boolean existsByUserAndNameAndIdIsNot(UserEntity user, String name, Long id);
-
-    Optional<UserSettingsEntity> findByIdAndUser(Long id, UserEntity user);
+    boolean existsByUserIdAndNameAndIdIsNot(Long userId, String name, Long id);
 }

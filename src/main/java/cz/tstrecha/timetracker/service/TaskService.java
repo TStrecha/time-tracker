@@ -2,9 +2,9 @@ package cz.tstrecha.timetracker.service;
 
 import cz.tstrecha.timetracker.constant.IdentifierType;
 import cz.tstrecha.timetracker.constant.TaskStatus;
-import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.TaskDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.filter.TaskFilter;
 import org.springframework.data.domain.Page;
 
@@ -12,69 +12,59 @@ import java.util.List;
 
 public interface TaskService {
     /**
-     *
      * @param taskRequest
-     * @param loggedUser
+     * @param userContext
      * @return
      */
-    TaskDTO createTask(TaskCreateRequestDTO taskRequest, LoggedUser loggedUser);
+    TaskDTO createTask(TaskCreateRequestDTO taskRequest, UserContext userContext);
 
     /**
-     *
      * @param identifierType
      * @param identifierValue
-     * @param loggedUser
+     * @param userContext
      * @return
      */
-    TaskDTO createEmptyTask(IdentifierType identifierType, String identifierValue, LoggedUser loggedUser);
+    TaskDTO createEmptyTask(IdentifierType identifierType, String identifierValue, UserContext userContext);
 
     /**
-     *
      * @param taskRequest
-     * @param loggedUser
+     * @param userContext
      * @return
      */
-    TaskDTO updateTask(TaskCreateRequestDTO taskRequest, LoggedUser loggedUser);
+    TaskDTO updateTask(TaskCreateRequestDTO taskRequest, UserContext userContext);
 
     /**
-     *
      * @param id
      * @param taskStatus
-     * @param loggedUser
+     * @param userContext
      * @return
      */
-    TaskDTO changeTaskStatus(Long id, TaskStatus taskStatus, LoggedUser loggedUser);
+    TaskDTO changeTaskStatus(Long id, TaskStatus taskStatus, UserContext userContext);
 
     /**
-     *
      * @param id
-     * @param loggedUser
      * @return
      */
-    TaskDTO deleteTask(Long id, LoggedUser loggedUser);
+    TaskDTO deleteTask(Long id);
 
     /**
-     *
      * @param id
-     * @param loggedUser
      * @return
      */
-    TaskDTO reactivateTask(Long id, LoggedUser loggedUser);
+    TaskDTO reactivateTask(Long id);
 
     /**
-     *
-     * @param limit
      * @param query
-     * @param loggedUser
+     * @param limit
+     * @param userContext
      * @return
      */
-    List<TaskDTO> searchForTasks(String query, Long limit, LoggedUser loggedUser);
+    List<TaskDTO> searchForTasks(String query, Long limit, UserContext userContext);
 
     /**
-     *
      * @param taskFilter
-     * @param loggedUser
+     * @param userContext
      * @return
      */
-    Page<TaskDTO> listTasks(TaskFilter taskFilter, LoggedUser loggedUser);
+    Page<TaskDTO> listTasks(TaskFilter taskFilter, UserContext userContext);
 }

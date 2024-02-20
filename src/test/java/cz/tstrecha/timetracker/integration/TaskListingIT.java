@@ -67,7 +67,7 @@ class TaskListingIT extends IntegrationTest {
     void test01_listTasks_filtering(TaskFilterField taskFilterField, String value, List<Long> rightIndices) {
         TaskFilter taskFilter = new TaskFilter(Map.of(taskFilterField, value), TaskFilterField.ID, SortDirection.ASC, 5, 0);
         var user = users.getFirst();
-        var tasks = taskService.listTasks(taskFilter, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user)).toList();
+        var tasks = taskService.listTasks(taskFilter, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()))).toList();
 
         Assertions.assertEquals(rightIndices.size(), tasks.size());
         Assertions.assertTrue(tasks.stream().map(TaskCreateRequestDTO::getId).allMatch(rightIndices::contains));
@@ -78,8 +78,8 @@ class TaskListingIT extends IntegrationTest {
     @ParameterizedTest
     @MethodSource("sortingData")
     <U extends Comparable<? super U>> void test02_listTasks_sorting(TaskFilterField sortField,
-                                                                           Function<TaskEntity, ? extends U> mappingFunction,
-                                                                           boolean asc) {
+                                                                    Function<TaskEntity, ? extends U> mappingFunction,
+                                                                    boolean asc) {
         var taskFilterAsc = new TaskFilter(Map.of(), sortField, asc ? SortDirection.ASC : SortDirection.DESC, Integer.MAX_VALUE, 0);
         var user = users.getFirst();
         var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(user.getId())).toList();
@@ -91,7 +91,7 @@ class TaskListingIT extends IntegrationTest {
             comparator = Comparator.comparing(mappingFunction).reversed();
         }
 
-        var tasksSortedAsc = taskService.listTasks(taskFilterAsc, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user)).toList();
+        var tasksSortedAsc = taskService.listTasks(taskFilterAsc, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()))).toList();
         var sortedManuallyAsc = currentUserTasks.stream().sorted(comparator).toList();
 
         Assertions.assertEquals(currentUserTasks.size(), tasksSortedAsc.size());
@@ -113,7 +113,7 @@ class TaskListingIT extends IntegrationTest {
         var user = users.getFirst();
         var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(user.getId())).toList();
 
-        var tasks = taskService.listTasks(taskFilter, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
+        var tasks = taskService.listTasks(taskFilter, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
 
         var manuallySorted = currentUserTasks.stream()
                 .filter(task -> task.getStatus() == TaskStatus.NEW)
@@ -137,8 +137,8 @@ class TaskListingIT extends IntegrationTest {
 
         var user = users.getFirst();
 
-        var tasksFirstPage = taskService.listTasks(firstPage, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
-        var tasksSecondPage = taskService.listTasks(secondPage, userMapper.toLoggedUser(userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()), user));
+        var tasksFirstPage = taskService.listTasks(firstPage, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
+        var tasksSecondPage = taskService.listTasks(secondPage, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
 
         Assertions.assertEquals(6, tasksFirstPage.getTotalElements());
         Assertions.assertEquals(2, tasksFirstPage.getTotalPages());

@@ -14,7 +14,6 @@ public class RelationshipCreateUpdateRequestDTO {
 
     private Long id;
 
-    private Long fromId;
     private Long toId;
 
     private List<String> permissions;

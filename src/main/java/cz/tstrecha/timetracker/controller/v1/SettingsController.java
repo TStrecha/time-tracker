@@ -1,9 +1,9 @@
 package cz.tstrecha.timetracker.controller.v1;
 
-import cz.tstrecha.timetracker.annotation.InjectLoggedUser;
+import cz.tstrecha.timetracker.annotation.InjectUserContext;
 import cz.tstrecha.timetracker.constant.Constants;
-import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.SettingsCreateUpdateDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.service.SettingsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,16 +30,16 @@ public class SettingsController {
     private final SettingsService settingsService;
 
     @PostMapping
-    @PreAuthorize("hasPermission(#loggedUser, 'setings.create')")
+    @PreAuthorize("hasPermission(#userContext, 'setings.create')")
     public ResponseEntity<SettingsCreateUpdateDTO> createUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
-                                                                     @InjectLoggedUser LoggedUser loggedUser){
-        return new ResponseEntity<>(settingsService.createSetting(setting, loggedUser), HttpStatus.CREATED);
+                                                                     @InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(settingsService.createSetting(setting, userContext), HttpStatus.CREATED);
     }
 
     @PutMapping
     @PreAuthorize("hasPermission(#setting.id, 'settings', 'setings.update')")
     public ResponseEntity<SettingsCreateUpdateDTO> updateUserSetting(@RequestBody @Valid SettingsCreateUpdateDTO setting,
-                                                                     @InjectLoggedUser LoggedUser loggedUser){
-        return new ResponseEntity<>(settingsService.updateSetting(setting, loggedUser), HttpStatus.OK);
+                                                                     @InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(settingsService.updateSetting(setting, userContext), HttpStatus.OK);
     }
 }

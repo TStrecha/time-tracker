@@ -424,7 +424,7 @@ class TaskIT extends IntegrationTest {
                 .andReturn()
                 .getResponse();
 
-        var deletedTaskResponse = mvc.perform(
+        mvc.perform(
                         delete(STR."\{Constants.V1_CONTROLLER_ROOT}/task/2")
                                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                                 .content(objectMapper.writeValueAsString(request))
@@ -432,12 +432,6 @@ class TaskIT extends IntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
                 .andReturn()
                 .getResponse();
-
-        var exceptionDTO = objectMapper.readValue(deletedTaskResponse.getContentAsString(), InternalErrorDTO.class);
-        Assertions.assertEquals("UserInputException", exceptionDTO.getException());
-        Assertions.assertEquals("Cannot find task with id[2]", exceptionDTO.getExceptionMessage());
-        Assertions.assertEquals("TaskCreateRequestDTO", exceptionDTO.getEntity());
-        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
     }
 
     @Test

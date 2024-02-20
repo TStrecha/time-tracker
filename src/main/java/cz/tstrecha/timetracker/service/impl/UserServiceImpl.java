@@ -3,10 +3,8 @@ package cz.tstrecha.timetracker.service.impl;
 import cz.tstrecha.timetracker.constant.AccountType;
 import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.constant.UserRole;
-import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
-import cz.tstrecha.timetracker.dto.LoggedUser;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.PasswordChangeDTO;
@@ -101,15 +99,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request) {
-        var from = userRepository.findById(request.getFromId())
-                .orElseThrow(() -> new EntityNotFoundException(STR."User entity not found by from id [\{request.getFromId()}]"));
+    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, UserContext userContext) {
+        var from = getUserFromContext(userContext);
         var to = userRepository.findById(request.getToId())
                 .orElseThrow(() -> new EntityNotFoundException(STR."User entity not found by to id [\{request.getToId()}]"));
 
         if (userRelationshipRepository.existsByFromAndTo(from, to)) {
             throw new UserInputException("Relationship already exists", ErrorTypeCode.RELATIONSHIP_ALREADY_EXISTS, RelationshipCreateUpdateRequestDTO.class);
         }
+
         var relation = relationshipMapper.fromRequest(request, from, to);
         relation = userRelationshipRepository.save(relation);
         return relationshipMapper.toDTOFromReceiving(relation);
@@ -117,19 +115,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
-        if (!Objects.equals(userContext.getId(), loggedUser.getId()) || !Objects.equals(userContext.getId(), request.getFromId())) {
-            throw new PermissionException("You can only create relationship for yourself.", ErrorTypeCode.ATTEMPTED_TO_CREATE_RELATIONSHIP_FOR_SOMEONE_ELSE, RelationshipCreateUpdateRequestDTO.class);
-        }
-        return transactionRunner.runInNewTransaction(() -> createRelationship(request));
-    }
-
-    @Override
-    @Transactional
-    public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, LoggedUser loggedUser, UserContext userContext) {
-        if (!Objects.equals(userContext.getId(), loggedUser.getId())) {
-            throw new PermissionException("You can only edit your relationships.",ErrorTypeCode.ATTEMPTED_TO_UPDATE_RELATIONSHIP_FOR_SOMEONE_ELSE, RelationshipCreateUpdateRequestDTO.class);
-        }
+    public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, UserContext userContext) {
         if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
             throw new UserInputException("You cannot edit a relationship between other users",
                     ErrorTypeCode.RELATIONSHIP_EDIT_WITHOUT_PERMISSION,
@@ -145,11 +131,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public LoginResponseDTO changeContext(Long id, LoggedUser loggedUser) {
-        var newContext = contextService.getContextFromUser(loggedUser.getUserEntity(), id);
+    public LoginResponseDTO changeContext(Long id, UserContext userContext) {
+        var user = getLoggedUserFromContext(userContext);
+        var newContext = contextService.getContextFromUser(user, id);
 
-        var token = authenticationService.generateToken(loggedUser.getUserEntity(), newContext);
-        var refreshToken = authenticationService.generateRefreshToken(loggedUser.getUserEntity().getId(), newContext.getId());
+        var token = authenticationService.generateToken(user, newContext);
+        var refreshToken = authenticationService.generateRefreshToken(user.getId(), newContext.getId());
 
         return new LoginResponseDTO(true, token, refreshToken);
     }
@@ -190,11 +177,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<ContextUserDTO> getActiveRelationships(LoggedUser loggedUser) {
-        if(loggedUser.getUserEntity().getRole() == UserRole.ADMIN) {
+    public List<ContextUserDTO> getActiveRelationships(UserContext userContext) {
+        if(userContext.getRole() == UserRole.ADMIN) {
             return userRepository.findAll().stream().map(userMapper::userToContextUserDTO).toList();
         }
-        return loggedUser.getUserEntity().getActiveRelationshipsReceiving().stream().map(userMapper::userRelationshipEntityToContextUserDTO).toList();
+
+        return getLoggedUserFromContext(userContext).getActiveRelationshipsReceiving().stream().map(userMapper::userRelationshipEntityToContextUserDTO).toList();
+    }
+
+    @Override
+    public UserEntity getUserFromContext(UserContext userContext) {
+        return findUserById(userContext.getCurrentUserId());
+    }
+
+    @Override
+    public UserEntity getLoggedUserFromContext(UserContext userContext) {
+        return findUserById(userContext.getId());
+    }
+
+    private UserEntity findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("User was not found from a valid context with id [%s]", id)));
     }
 
     private LoginResponseDTO generateLoginResponseDTO(UserEntity user, ContextUserDTO contextUserDTO){

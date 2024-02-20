@@ -12,11 +12,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserContext implements Principal, UserDetails {
+public class UserContext implements Principal {
 
     private Long id;
     private String email;
@@ -29,48 +30,25 @@ public class UserContext implements Principal, UserDetails {
     @Override
     @JsonIgnore
     public String getName() {
-        return loggedAs.getFullName();
+        return fullName;
     }
 
     @JsonIgnore
-    @Override
+    public Long getCurrentUserId() {
+        return loggedAs.getId();
+    }
+
+    @JsonIgnore
+    public Boolean isAccountOwner() {
+        return Objects.equals(id, loggedAs.getId());
+    }
+
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(getRole().name()));
-    }
-
-    @Override
-    @JsonIgnore
-    public String getPassword() {
-        return null;
-    }
-
-    @Override
-    @JsonIgnore
-    public String getUsername() {
-        return getEmail();
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean isEnabled() {
-        return true;
+        if(isAccountOwner()) {
+            return List.of(new SimpleGrantedAuthority(STR."ROLE_\{getRole().name()}"), new SimpleGrantedAuthority("ROLE_ACCOUNT_OWNER"));
+        } else {
+            return List.of(new SimpleGrantedAuthority(STR."ROLE_\{getRole().name()}"));
+        }
     }
 }
