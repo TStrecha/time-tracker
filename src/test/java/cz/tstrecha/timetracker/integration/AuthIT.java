@@ -34,7 +34,7 @@ class AuthIT extends IntegrationTest {
     private final static String AUTH_API_BASE_PATH = "/auth";
 
     private final static String USER_EMAIL = "test@mail.com";
-    private final static String USER_PASSWORD = "testcase";
+    private final static String USER_PASSWORD = "testcase0";
     private final static String USER_FIRST_NAME = "Test";
     private final static String USER_LAST_NAME = "Case";
     private final static String COMPANY_NAME = "Time Tracker s.r.o.";
