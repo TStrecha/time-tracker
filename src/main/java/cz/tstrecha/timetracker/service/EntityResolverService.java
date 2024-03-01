@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface EntityResolverService {
 
-    List<Long> resolveUserIds(String entityType, Object targetId);
+    List<Long> resolveUserIds(String entityType, Long targetId);
 }

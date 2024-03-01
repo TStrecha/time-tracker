@@ -1,5 +1,6 @@
 package cz.tstrecha.timetracker;
 
+import cz.tstrecha.timetracker.utils.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
