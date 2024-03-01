@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 public class ContextServiceImpl implements ContextService {
 
     private final UserRepository userRepository;
+
     private final UserMapper userMapper;
 
     @Override

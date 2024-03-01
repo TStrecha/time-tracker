@@ -24,7 +24,6 @@ import cz.tstrecha.timetracker.repository.entity.UserRelationshipEntity;
 import cz.tstrecha.timetracker.repository.entity.UserSettingsEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
 import cz.tstrecha.timetracker.service.ContextService;
-import cz.tstrecha.timetracker.service.TransactionRunner;
 import cz.tstrecha.timetracker.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -53,12 +52,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final AuthenticationService authenticationService;
-    private final ContextService contextService;
 
     private final UserMapper userMapper;
-    private final RelationshipMapper relationshipMapper;
-
-    private final TransactionRunner transactionRunner;
 
     @Override
     @Transactional
@@ -99,50 +94,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public RelationshipDTO createRelationship(RelationshipCreateUpdateRequestDTO request, UserContext userContext) {
-        var from = getUserFromContext(userContext);
-        var to = userRepository.findById(request.getToId())
-                .orElseThrow(() -> new EntityNotFoundException(STR."User entity not found by to id [\{request.getToId()}]"));
-
-        if (userRelationshipRepository.existsByFromAndTo(from, to)) {
-            throw new UserInputException("Relationship already exists", ErrorTypeCode.RELATIONSHIP_ALREADY_EXISTS, RelationshipCreateUpdateRequestDTO.class);
-        }
-
-        var relation = relationshipMapper.fromRequest(request, from, to);
-        relation = userRelationshipRepository.save(relation);
-        return relationshipMapper.toDTOFromReceiving(relation);
-    }
-
-    @Override
-    @Transactional
-    public RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO request, UserContext userContext) {
-        if (!Objects.equals(userContext.getId(), userRelationshipRepository.findById(request.getId()).orElseThrow().getFrom().getId())) {
-            throw new UserInputException("You cannot edit a relationship between other users",
-                    ErrorTypeCode.RELATIONSHIP_EDIT_WITHOUT_PERMISSION,
-                    RelationshipCreateUpdateRequestDTO.class);
-        }
-
-        var relation = userRelationshipRepository.findById(request.getId())
-                .orElseThrow(() -> new EntityNotFoundException(STR."Relationship entity not found by id [\{request.getId()}]"));
-        relationshipMapper.updateRelationship(request, relation);
-        relation = userRelationshipRepository.save(relation);
-        return relationshipMapper.toDTOFromReceiving(relation);
-    }
-
-    @Override
-    @Transactional
-    public LoginResponseDTO changeContext(Long id, UserContext userContext) {
-        var user = getLoggedUserFromContext(userContext);
-        var newContext = contextService.getContextFromUser(user, id);
-
-        var token = authenticationService.generateToken(user, newContext);
-        var refreshToken = authenticationService.generateRefreshToken(user.getId(), newContext.getId());
-
-        return new LoginResponseDTO(true, token, refreshToken);
-    }
-
-    @Override
-    @Transactional
     public LoginResponseDTO changeUserDetails(UserUpdateDTO userUpdateDTO, UserContext userContext) {
         validateNames(userUpdateDTO.getAccountType(),
                 userUpdateDTO.getFirstName(),
@@ -176,30 +127,6 @@ public class UserServiceImpl implements UserService {
         return generateLoginResponseDTO(user, userContext.getLoggedAs());
     }
 
-    @Override
-    public List<ContextUserDTO> getActiveRelationships(UserContext userContext) {
-        if(userContext.getRole() == UserRole.ADMIN) {
-            return userRepository.findAll().stream().map(userMapper::userToContextUserDTO).toList();
-        }
-
-        return getLoggedUserFromContext(userContext).getActiveRelationshipsReceiving().stream().map(userMapper::userRelationshipEntityToContextUserDTO).toList();
-    }
-
-    @Override
-    public UserEntity getUserFromContext(UserContext userContext) {
-        return findUserById(userContext.getCurrentUserId());
-    }
-
-    @Override
-    public UserEntity getLoggedUserFromContext(UserContext userContext) {
-        return findUserById(userContext.getId());
-    }
-
-    private UserEntity findUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(String.format("User was not found from a valid context with id [%s]", id)));
-    }
-
     private LoginResponseDTO generateLoginResponseDTO(UserEntity user, ContextUserDTO contextUserDTO){
         var token = authenticationService.generateToken(user, contextUserDTO);
         var refreshToken = authenticationService.generateRefreshToken(user.getId(), contextUserDTO == null ? user.getId() : contextUserDTO.getId());
@@ -209,14 +136,10 @@ public class UserServiceImpl implements UserService {
     private void validateNames(AccountType accountType, String firstName, String lastName, String companyName){
         if (accountType == AccountType.PERSON) {
             if (Strings.isEmpty(firstName) || Strings.isEmpty(lastName)) {
-                throw new UserInputException("Person has to have first name and last name filled in.",
-                        ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING,
-                        UserUpdateDTO.class);
+                throw new UserInputException("Person has to have first name and last name filled in.", ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING, UserUpdateDTO.class);
             }
         } else if(accountType == AccountType.COMPANY && (Strings.isEmpty(companyName))){
-                throw new UserInputException("Company has to have company name filled in.",
-                        ErrorTypeCode.COMPANY_NAME_MISSING,
-                        UserUpdateDTO.class);
+                throw new UserInputException("Company has to have company name filled in.", ErrorTypeCode.COMPANY_NAME_MISSING, UserUpdateDTO.class);
         }
     }
 

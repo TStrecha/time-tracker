@@ -34,6 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private static final String USER_ID_CLAIM_KEY = "userId";
     private static final String AUTHORIZED_AS_USER_CLAIM_KEY = "authorizedAsUserId";
 
+
     private final ContextService contextService;
 
     private final UserMapper userMapper;
@@ -46,12 +47,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public String generateToken(UserEntity user, ContextUserDTO loggedAs) {
-        var contextUserForLoggedAs = loggedAs == null ?
-                user.getUserRelationshipGiving().stream().filter(relation -> relation.getTo() == relation.getFrom())
-                        .findFirst()
-                        .map(userMapper::userRelationshipEntityToContextUserDTO)
-                        .orElseThrow(() -> new IllegalArgumentException(STR."No relationship between the same user found for user [\{user.getId()}]"))
-                : loggedAs;
+        var contextUserForLoggedAs = loggedAs;
+
+        if(contextUserForLoggedAs == null) {
+            contextUserForLoggedAs = user.getUserRelationshipGiving().stream().filter(relation -> relation.getTo() == relation.getFrom())
+                    .findFirst()
+                    .map(userMapper::userRelationshipEntityToContextUserDTO)
+                    .orElseThrow(() -> new IllegalArgumentException(STR."No relationship between the same user found for user [\{user.getId()}]"));
+        }
 
         var claims = Map.of(USER_CONTEXT_CLAIM_KEY, userMapper.toContext(user, contextUserForLoggedAs));
         var signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(appConfig.getAuth().getSecretKey()));

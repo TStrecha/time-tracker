@@ -1,6 +1,6 @@
 package cz.tstrecha.timetracker.security;
 
-import cz.tstrecha.timetracker.IntegrationTest;
+import cz.tstrecha.timetracker.utils.IntegrationTest;
 import cz.tstrecha.timetracker.annotation.CustomPermissionCheck;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -95,8 +95,6 @@ class SecurityIT extends IntegrationTest {
     }
 
     private String getFailureMessage(ApiCheckResult apiResult) {
-        System.out.println(apiResult.handler.toString());
-
         return STR." Endpoint \{apiResult.getMapping().toString()} failed security test. Status: \{apiResult.getStatus()} Message: \{apiResult.getMessage()}";
     }
 

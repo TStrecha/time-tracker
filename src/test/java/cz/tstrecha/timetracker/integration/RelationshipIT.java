@@ -1,29 +1,28 @@
 package cz.tstrecha.timetracker.integration;
 
-import cz.tstrecha.timetracker.IntegrationTest;
-import cz.tstrecha.timetracker.config.JwtAuthenticationFilter;
-import cz.tstrecha.timetracker.constant.AccountType;
-import cz.tstrecha.timetracker.constant.Constants;
-import cz.tstrecha.timetracker.dto.ContextUserDTO;
-import cz.tstrecha.timetracker.dto.InternalErrorDTO;
+import cz.tstrecha.timetracker.constant.ErrorTypeCode;
+import cz.tstrecha.timetracker.repository.entity.UserEntity;
+import cz.tstrecha.timetracker.utils.IntegrationTest;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
-import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.http.HttpMethod;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static cz.tstrecha.timetracker.utils.RequestBuilder.buildRequest;
+import static cz.tstrecha.timetracker.utils.assertions.UserInputExceptionHandler.handleUserInputException;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class RelationshipIT extends IntegrationTest {
+
+    private final static String RELATIONSHIP_API_BASE_PATH = "/relationship";
 
     @Autowired
     private RelationshipMapper relationshipMapper;
@@ -31,195 +30,179 @@ class RelationshipIT extends IntegrationTest {
     @Test
     @SneakyThrows
     @Transactional
-    void test01_createRelationship_success() {
-        var userIds = mockUsers(2);
-        var request = new RelationshipCreateUpdateRequestDTO();
-        request.setToId(userIds.get(1));
-        request.setPermissions(List.of("*"));
-        request.setSecureValues(false);
+    void should_BeUnauthorized_When_CreatingNotAuthorized() {
+        var duplicateRequest = createRequest(primaryUser);
 
-        var apiResult = mvc.perform(
-                post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(request))
-                        .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                userRepository.findById(userIds.getFirst()).orElseThrow(),
-                                null)))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andReturn()
-                .getResponse();
-
-        var relation = objectMapper.readValue(apiResult.getContentAsString(), RelationshipDTO.class);
-
-        Assertions.assertEquals(request.getToId(), relation.getOppositeUserId());
-        Assertions.assertEquals(request.getPermissions(), relation.getPermissions());
-        Assertions.assertEquals(getDisplayName(userRepository.findById(request.getToId()).orElseThrow()), relation.getDisplayName());
-        Assertions.assertEquals(request.getActiveFrom(), relation.getActiveFrom());
-        Assertions.assertEquals(request.getActiveTo(), relation.getActiveTo());
+        buildRequest(HttpMethod.POST, RELATIONSHIP_API_BASE_PATH)
+                .withBody(duplicateRequest)
+                .performWith(mvc)
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     @SneakyThrows
     @Transactional
-    void test02_createRelationship_fail_createForOtherUser() {
-        var userIds = mockUsers(2);
-        var request = new RelationshipCreateUpdateRequestDTO();
-        request.setToId(userIds.get(1));
-        request.setPermissions(List.of("*"));
-        request.setSecureValues(false);
+    void should_CreateRelationship_When_ValidRequestGiven() {
+        var request = createRequest(secondaryUser);
 
-        var loggedAs = new ContextUserDTO(userIds.getFirst() + 1, "wrong@email.com", "Wrong User", AccountType.PERSON, null, null, false);
+        var response = buildRequest(HttpMethod.POST, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getAuthorizationToken(primaryUser))
+                .withBody(request)
+                .performWith(mvc)
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse();
 
-        mvc.perform(
-                    post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
-                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-                            .content(objectMapper.writeValueAsString(request))
-                            .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX +
-                                    authenticationService.generateToken(userRepository.findById(userIds.getFirst()).orElseThrow(), loggedAs)))
-            .andExpect(MockMvcResultMatchers.status().isForbidden())
-            .andReturn()
-            .getResponse();
+        var createdRelationship = objectMapper.readValue(response.getContentAsString(), RelationshipDTO.class);
+
+        Assertions.assertEquals(request.getToId(), createdRelationship.getOppositeUserId());
+        Assertions.assertEquals(request.getPermissions(), createdRelationship.getPermissions());
+        Assertions.assertEquals(secondaryUser.getDisplayName(), createdRelationship.getDisplayName());
+        Assertions.assertEquals(request.getActiveFrom(), createdRelationship.getActiveFrom());
+        Assertions.assertEquals(request.getActiveTo(), createdRelationship.getActiveTo());
     }
 
     @Test
     @SneakyThrows
     @Transactional
-    void test03_createRelationship_fail_createSameRelationship() {
-        var userIds = mockUsers(2);
-        var request = new RelationshipCreateUpdateRequestDTO();
-        request.setToId(userIds.get(1));
-        request.setPermissions(List.of("*"));
-        request.setSecureValues(false);
+    void should_BeForbidden_When_CreateRelationshipAndLoggedAsDifferentUser() {
+        var request = createRequest(tertiaryUser);
 
-        mvc.perform(
-                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(request))
-                                .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userRepository.findById(userIds.getFirst()).orElseThrow(),
-                                        null)))
-                .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andReturn()
-                .getResponse();
-
-        var response = mvc.perform(
-                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(request))
-                                .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userRepository.findById(userIds.getFirst()).orElseThrow(),
-                                        null)))
-                .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                .andReturn()
-                .getResponse();
-
-        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
-        Assertions.assertEquals("UserInputException", exceptionDTO.getException());
-        Assertions.assertEquals("Relationship already exists", exceptionDTO.getExceptionMessage());
-        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
-        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
+        buildRequest(HttpMethod.POST, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getAuthorizationToken(primaryUser, secondaryUser))
+                .withBody(request)
+                .performWith(mvc)
+                .andExpect(status().isForbidden());
     }
 
     @Test
     @SneakyThrows
     @Transactional
-    void test04_createRelationship_fail_createForOtherUser() {
-        var userIds = mockUsers(2);
-        var request = new RelationshipCreateUpdateRequestDTO();
-        request.setToId(userIds.get(1));
-        request.setPermissions(List.of("*"));
-        request.setSecureValues(false);
+    void should_BeUserInputException_When_CreateRelationshipBetweenSameUser() {
+        var request = createRequest(secondaryUser);
 
-        mvc.perform(
-                        post(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(request))
-                                .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userRepository.findById(userIds.getFirst()).orElseThrow(),
-                                        new ContextUserDTO())))
-                .andExpect(MockMvcResultMatchers.status().isForbidden())
-                .andReturn()
-                .getResponse();
+        buildRequest(HttpMethod.POST, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getPrimaryUserAuthorizationToken())
+                .withBody(request)
+                .performWith(mvc)
+                .andExpect(status().isCreated());
+
+        var duplicateRequest = createRequest(secondaryUser);
+        duplicateRequest.setPermissions(List.of("task.read"));
+        duplicateRequest.setSecureValues(true);
+
+        buildRequest(HttpMethod.POST, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getPrimaryUserAuthorizationToken())
+                .withBody(request)
+                .performWith(mvc)
+                .andExpect(status().isUnprocessableEntity())
+                .andDo(handleUserInputException(ErrorTypeCode.RELATIONSHIP_ALREADY_EXISTS));
     }
 
     @Test
     @SneakyThrows
     @Transactional
-    void test05_updateRelationship_success() {
-        var userIds = mockUsers(3);
-        var userEntities = userIds.stream().map(id -> userRepository.findById(id).orElseThrow()).toList();
-        var request = new RelationshipCreateUpdateRequestDTO();
-        request.setToId(userIds.get(1));
-        request.setPermissions(List.of("*"));
-        request.setSecureValues(false);
-
-        var relationshipEntity = relationshipMapper.fromRequest(request,
-                userEntities.getFirst(),
-                userEntities.get(1));
+    void should_UpdateRelationship_When_LoggedAsOwner() {
+        var request = createRequest(secondaryUser);
+        var relationshipEntity = relationshipMapper.fromRequest(request, primaryUser, secondaryUser);
 
         relationshipRepository.save(relationshipEntity);
 
-        request.setId(relationshipEntity.getId());
+        var updateRequest = createUpdatedRequest(relationshipEntity.getId(), secondaryUser);
+
+        var response = buildRequest(HttpMethod.PUT, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getPrimaryUserAuthorizationToken())
+                .withBody(updateRequest)
+                .performWith(mvc)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        var relation = objectMapper.readValue(response.getContentAsString(), RelationshipDTO.class);
+
+        Assertions.assertEquals(updateRequest.getToId(), relation.getOppositeUserId());
+        Assertions.assertEquals(updateRequest.getPermissions(), relation.getPermissions());
+        Assertions.assertEquals(secondaryUser.getDisplayName(), relation.getDisplayName());
+        Assertions.assertEquals(updateRequest.getActiveFrom(), relation.getActiveFrom());
+        Assertions.assertEquals(updateRequest.getActiveTo(), relation.getActiveTo());
+    }
+
+    @Test
+    @SneakyThrows
+    @Transactional
+    void should_DoNothing_When_UserChangeRequested() {
+        var request = createRequest(secondaryUser);
+        var relationshipEntity = relationshipMapper.fromRequest(request, primaryUser, secondaryUser);
+
+        relationshipRepository.save(relationshipEntity);
+
+        var updateRequest = createUpdatedRequest(relationshipEntity.getId(), tertiaryUser);
+
+        var response = buildRequest(HttpMethod.PUT, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getPrimaryUserAuthorizationToken())
+                .withBody(updateRequest)
+                .performWith(mvc)
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        var relation = objectMapper.readValue(response.getContentAsString(), RelationshipDTO.class);
+
+        Assertions.assertEquals(secondaryUser.getId(), relation.getOppositeUserId());
+        Assertions.assertEquals(updateRequest.getPermissions(), relation.getPermissions());
+        Assertions.assertEquals(secondaryUser.getDisplayName(), relation.getDisplayName());
+        Assertions.assertEquals(updateRequest.getActiveFrom(), relation.getActiveFrom());
+        Assertions.assertEquals(updateRequest.getActiveTo(), relation.getActiveTo());
+    }
+
+    @Test
+    @SneakyThrows
+    @Transactional
+    void should_BeForbidden_When_UpdatingNotExistingRelationship() {
+        var duplicateRequest = createUpdatedRequest(Long.MAX_VALUE, secondaryUser);
+
+        buildRequest(HttpMethod.PUT, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getPrimaryUserAuthorizationToken())
+                .withBody(duplicateRequest)
+                .performWith(mvc)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    @Transactional
+    void should_BeForbidden_When_UpdateRelationshipBelongingToDifferentUser() {
+        var request = createRequest(secondaryUser);
+        var relationshipEntity = relationshipMapper.fromRequest(request, tertiaryUser, primaryUser);
+
+        relationshipRepository.save(relationshipEntity);
+
+        var updateRequest = createUpdatedRequest(relationshipEntity.getId(), tertiaryUser);
+
+        buildRequest(HttpMethod.PUT, RELATIONSHIP_API_BASE_PATH)
+                .withAuthorization(getAuthorizationToken(secondaryUser))
+                .withBody(updateRequest)
+                .performWith(mvc)
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse();
+    }
+
+    private RelationshipCreateUpdateRequestDTO createRequest(UserEntity to) {
+        var request = new RelationshipCreateUpdateRequestDTO();
+        request.setToId(to.getId());
+        request.setPermissions(List.of("*"));
+        request.setSecureValues(false);
+        return request;
+    }
+
+    private RelationshipCreateUpdateRequestDTO createUpdatedRequest(Long relationshipId, UserEntity to) {
+        var request = new RelationshipCreateUpdateRequestDTO();
+        request.setId(relationshipId);
+        request.setToId(to.getId());
         request.setPermissions(List.of(""));
         request.setSecureValues(true);
-
-        var apiResult = mvc.perform(
-                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(request))
-                                .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                       userEntities.getFirst(), null)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn()
-                .getResponse();
-
-        var relation = objectMapper.readValue(apiResult.getContentAsString(), RelationshipDTO.class);
-
-        Assertions.assertEquals(request.getPermissions(), relation.getPermissions());
-        Assertions.assertEquals(getDisplayName(userEntities.get(1)), relation.getDisplayName());
-        Assertions.assertEquals(request.getActiveFrom(), relation.getActiveFrom());
-        Assertions.assertEquals(request.getActiveTo(), relation.getActiveTo());
-    }
-
-    @Test
-    @SneakyThrows
-    @Transactional
-    void test06_updateRelationship_fail_updateOtherUser() {
-        var userIds = mockUsers(3);
-        var userEntities = userIds.stream().map(id -> userRepository.findById(id).orElseThrow()).toList();
-        var request = new RelationshipCreateUpdateRequestDTO();
-        request.setToId(userIds.get(1));
-        request.setPermissions(List.of("*"));
-        request.setSecureValues(false);
-
-        var relationshipEntity = relationshipMapper.fromRequest(request,
-                userEntities.get(2),
-                userEntities.get(1));
-
-        relationshipRepository.save(relationshipEntity);
-
-        request.setId(relationshipEntity.getId());
-        request.setPermissions(List.of("report.read"));
-        request.setSecureValues(true);
-
-        var response = mvc.perform(
-                        put(STR."\{Constants.V1_CONTROLLER_ROOT}/user/relationship")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(objectMapper.writeValueAsString(request))
-                                .header("Authorization", JwtAuthenticationFilter.AUTHORIZATION_HEADER_BEARER_PREFIX + authenticationService.generateToken(
-                                        userEntities.getFirst(), null)))
-                .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                .andReturn()
-                .getResponse();
-
-        var exceptionDTO = objectMapper.readValue(response.getContentAsString(), InternalErrorDTO.class);
-        Assertions.assertEquals("UserInputException", exceptionDTO.getException());
-        Assertions.assertEquals("You cannot edit a relationship between other users", exceptionDTO.getExceptionMessage());
-        Assertions.assertEquals("RelationshipCreateUpdateRequestDTO", exceptionDTO.getEntity());
-        Assertions.assertNotNull(exceptionDTO.getLocalizedMessage());
-    }
-
-    private String getDisplayName(UserEntity user){
-        return user.getAccountType() == AccountType.PERSON ? STR."\{user.getFirstName()} \{user.getLastName()}" : user.getCompanyName();
+        request.setActiveTo(OffsetDateTime.now());
+        return request;
     }
 }
