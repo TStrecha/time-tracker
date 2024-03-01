@@ -12,13 +12,11 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskFilter {
+
     private Map<TaskFilterField, String> fieldFilters;
-
     private TaskFilterField sort = TaskFilterField.ID;
-
     private SortDirection sortDirection;
 
     private Integer rows = 15;
-
     private Integer pageNumber = 0;
 }

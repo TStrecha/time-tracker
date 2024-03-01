@@ -11,20 +11,14 @@ import lombok.NoArgsConstructor;
 public class TaskCreateRequestDTO {
 
     private Long id;
-
     private Long customId;
 
     private String name;
-
     private String nameSimple;
 
     private String note;
-
     private String description;
-
     private TaskStatus status;
-
-    private Long estimate;
-
     private boolean active;
+    private Long estimate;
 }

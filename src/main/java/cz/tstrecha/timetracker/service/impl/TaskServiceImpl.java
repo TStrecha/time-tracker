@@ -14,7 +14,7 @@ import cz.tstrecha.timetracker.dto.mapper.TaskMapper;
 import cz.tstrecha.timetracker.repository.TaskRepository;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity;
 import cz.tstrecha.timetracker.service.TaskService;
-import cz.tstrecha.timetracker.service.UserService;
+import cz.tstrecha.timetracker.service.UserRetrievalService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -32,14 +32,14 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
 
-    private final UserService userService;
+    private final UserRetrievalService userRetrievalService;
 
     private final TaskMapper taskMapper;
 
     @Override
     @Transactional
     public TaskDTO createTask(TaskCreateRequestDTO taskRequest, UserContext userContext) {
-        var user = userService.getUserFromContext(userContext);
+        var user = userRetrievalService.getUserFromContext(userContext);
         var taskEntity = taskMapper.fromRequest(taskRequest, user);
         taskEntity = taskRepository.save(taskEntity);
         return taskMapper.toDTO(taskEntity);
@@ -48,7 +48,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public TaskDTO createEmptyTask(IdentifierType identifierType, String identifierValue, UserContext userContext) {
-        var user = userService.getUserFromContext(userContext);
+        var user = userRetrievalService.getUserFromContext(userContext);
 
         var taskEntity = new TaskEntity();
         taskEntity.setUser(user);

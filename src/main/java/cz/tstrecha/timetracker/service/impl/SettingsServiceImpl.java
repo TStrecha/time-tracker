@@ -7,7 +7,7 @@ import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.mapper.SettingsMapper;
 import cz.tstrecha.timetracker.repository.UserSettingsRepository;
 import cz.tstrecha.timetracker.service.SettingsService;
-import cz.tstrecha.timetracker.service.UserService;
+import cz.tstrecha.timetracker.service.UserRetrievalService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,14 +20,14 @@ public class SettingsServiceImpl implements SettingsService {
 
     private final UserSettingsRepository userSettingsRepository;
 
-    private final UserService userService;
+    private final UserRetrievalService userRetrievalService;
 
     private final SettingsMapper settingsMapper;
 
     @Override
     @Transactional
     public SettingsCreateUpdateDTO createSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, UserContext userContext){
-        var user = userService.getUserFromContext(userContext);
+        var user = userRetrievalService.getUserFromContext(userContext);
 
         if (settingsCreateUpdateDTO.getValidTo() != null && settingsCreateUpdateDTO.getValidFrom().isAfter(settingsCreateUpdateDTO.getValidTo())){
             throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, SettingsCreateUpdateDTO.class);

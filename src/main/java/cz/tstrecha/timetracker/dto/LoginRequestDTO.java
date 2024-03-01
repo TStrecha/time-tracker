@@ -15,5 +15,4 @@ public class LoginRequestDTO {
     private String email;
     @Length(min = 8)
     private String password;
-
 }
