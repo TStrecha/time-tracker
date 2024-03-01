@@ -17,7 +17,6 @@ public class SettingsCreateUpdateDTO {
     private long id;
 
     private LocalDate validFrom;
-
     private LocalDate validTo;
 
     @Positive
@@ -28,6 +27,5 @@ public class SettingsCreateUpdateDTO {
 
     @NotNull
     private String name;
-
     private String note;
 }

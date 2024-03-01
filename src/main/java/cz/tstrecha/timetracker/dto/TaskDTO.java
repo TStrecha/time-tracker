@@ -14,6 +14,5 @@ import java.time.OffsetDateTime;
 public class TaskDTO extends TaskCreateRequestDTO {
 
     private OffsetDateTime createdAt;
-
     private OffsetDateTime updatedAt;
 }

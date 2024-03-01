@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserUpdateDTO {
+
     private AccountType accountType;
     private SecretMode secretMode = SecretMode.NONE;
     private String firstName;

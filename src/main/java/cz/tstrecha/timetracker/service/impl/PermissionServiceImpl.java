@@ -25,9 +25,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public boolean hasPermission(UserContext context, String entityType, Object targetId, String permission) {
         if(targetId instanceof Long id) {
-            // TODO(TS, 2024/02/18): Implement me with EntityResolverService.
-            return true;
-//            return ContextUtils.hasPermissions(context, permission) && entityResolverService.resolveUserIds(entityType, id).contains(context.getCurrentUserId());
+            return ContextUtils.hasPermissions(context, permission) && entityResolverService.resolveUserIds(entityType, id).contains(context.getCurrentUserId());
         }
 
         throw new IllegalArgumentException(STR."Target id of type [\{targetId.getClass().getSimpleName()}] is not supported.");
