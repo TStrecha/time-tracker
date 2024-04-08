@@ -1,11 +1,14 @@
 package cz.tstrecha.timetracker.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.tstrecha.timetracker.utils.IntegrationTest;
 import cz.tstrecha.timetracker.annotation.CustomPermissionCheck;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,9 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.List;
@@ -37,16 +43,36 @@ class SecurityIT extends IntegrationTest {
     private RequestMappingHandlerMapping requestMappingHandlerMapping;
 
     @Test
+    @SneakyThrows
     void testEndpointSecurity() {
         var softly = new SoftAssertions();
 
-        requestMappingHandlerMapping.getHandlerMethods().forEach((mapping, handler) -> {
+        var handlerResults = requestMappingHandlerMapping.getHandlerMethods().entrySet().stream().map(pair -> {
+            var mapping = pair.getKey();
+            var handler = pair.getValue();
             var apiResult = verifyHandler(mapping, handler);
 
             softly.assertThat(apiResult.status.valid).withFailMessage(() -> getFailureMessage(apiResult)).isTrue();
-        });
+
+            return apiResult;
+        }).toList();
+
+        storeSecurityResultsInFile(handlerResults);
 
         softly.assertAll();
+    }
+
+    @SneakyThrows
+    private void storeSecurityResultsInFile(List<ApiCheckResult> handlerResults) {
+        var file = new File("security_result.json");
+        if(!file.exists()) {
+            file.createNewFile();
+        }
+
+        var writer = new BufferedWriter(new FileWriter(file));
+        writer.write(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(handlerResults));
+
+        writer.close();
     }
 
     private ApiCheckResult verifyHandler(RequestMappingInfo mapping, HandlerMethod handler) {
@@ -115,9 +141,16 @@ class SecurityIT extends IntegrationTest {
     @AllArgsConstructor
     @NoArgsConstructor
     private static class ApiCheckResult {
+        @JsonIgnore
         private RequestMappingInfo mapping;
+        @JsonIgnore
         private HandlerMethod handler;
         private CheckResultStatus status;
         private String message;
+
+        @JsonProperty
+        private String getEndpointDefinition() {
+            return mapping.toString();
+        }
     }
 }
