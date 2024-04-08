@@ -47,7 +47,7 @@ jobs:
       - name: Test - Unit
         run: mvn test -Dtest=**.unit.** # This stage should run any unit test, thus won't start spring boot => active profiles are not present
       - name: Test - Integration
-        if: "!contains(github.event.head_commit.message, 'skip integration tests')"
+        if: "!contains(github.event.head_commit.message, '--skip-integration-tests')"
         run: mvn test -Dtest=**.integration.** -Dspring.profiles.active=testprod
       - name: Test - Security
         run: mvn test -Dtest=**.security.** -Dspring.profiles.active=testprod
