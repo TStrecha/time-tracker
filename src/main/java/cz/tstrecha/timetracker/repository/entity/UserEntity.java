@@ -64,7 +64,7 @@ public class UserEntity implements UserDetails {
     private String passwordHashed;
 
     @OneToMany(mappedBy = "user")
-    private List<TaskEntity> tasks;
+    private List<TaskEntity> tasks = new ArrayList<>();;
 
     @OneToMany(mappedBy = "from")
     private List<UserRelationshipEntity> userRelationshipGiving = new ArrayList<>();

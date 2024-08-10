@@ -9,7 +9,6 @@ import lombok.SneakyThrows;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -18,8 +17,10 @@ import static cz.tstrecha.timetracker.config.JwtAuthenticationFilter.AUTHORIZATI
 @Data
 public class RequestBuilder {
 
-    public static RequestBuilder buildRequest(HttpMethod method, String urlTemplate) {
-        return new RequestBuilder(MockMvcRequestBuilders.request(method, Constants.V1_CONTROLLER_ROOT + urlTemplate));
+    public static RequestBuilder buildRequest(HttpMethod method, String urlTemplate, Object... uriVariables) {
+        var requestBuilder = MockMvcRequestBuilders.request(method, Constants.V1_CONTROLLER_ROOT + urlTemplate, uriVariables);
+
+        return new RequestBuilder(requestBuilder);
     }
 
     private final MockHttpServletRequestBuilder httpRequestBuilder;
@@ -35,8 +36,11 @@ public class RequestBuilder {
         return this;
     }
 
-    public RequestBuilder withAuthorization(IntegrationTest.TokenHolder tokenHolder) {
-        return withAuthorization(tokenHolder.getToken());
+    public RequestBuilder withAuthorization(IntegrationTest.UserAuthorizationContextHolder contextHolder) {
+        if(contextHolder == null) {
+            return this;
+        }
+        return withAuthorization(contextHolder.getToken());
     }
 
     @SneakyThrows
@@ -53,7 +57,10 @@ public class RequestBuilder {
     }
 
     @SneakyThrows
-    public ResultActions performWith(MockMvc mvc) {
-        return mvc.perform(httpRequestBuilder);
+    public ResultActionsHandler performWith(MockMvc mvc) {
+        var resultActions = mvc.perform(httpRequestBuilder);
+        var handler = new ResultActionsHandler(resultActions);
+
+        return handler;
     }
 }

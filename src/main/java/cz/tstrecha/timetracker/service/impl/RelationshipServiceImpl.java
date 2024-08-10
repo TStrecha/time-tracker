@@ -4,7 +4,6 @@ import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
-import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
@@ -12,18 +11,14 @@ import cz.tstrecha.timetracker.dto.mapper.RelationshipMapper;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
 import cz.tstrecha.timetracker.repository.UserRelationshipRepository;
 import cz.tstrecha.timetracker.repository.UserRepository;
-import cz.tstrecha.timetracker.service.AuthenticationService;
-import cz.tstrecha.timetracker.service.ContextService;
 import cz.tstrecha.timetracker.service.RelationshipService;
 import cz.tstrecha.timetracker.service.UserRetrievalService;
-import cz.tstrecha.timetracker.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +31,6 @@ public class RelationshipServiceImpl implements RelationshipService {
 
     private final RelationshipMapper relationshipMapper;
     private final UserMapper userMapper;
-    private final ContextService contextService;
-    private final AuthenticationService authenticationService;
 
     @Override
     public List<ContextUserDTO> getActiveContexts(UserContext userContext) {
@@ -45,19 +38,18 @@ public class RelationshipServiceImpl implements RelationshipService {
             return userRepository.findAll().stream().map(userMapper::userToContextUserDTO).toList();
         }
 
-        return userRetrievalService.getLoggedUserFromContext(userContext).getActiveRelationshipsReceiving().stream().map(userMapper::userRelationshipEntityToContextUserDTO).toList();
+        return userRetrievalService.getLoggedUserFromContext(userContext)
+                .getActiveRelationshipsReceiving().stream()
+                .map(userMapper::userRelationshipEntityToContextUserDTO)
+                .toList();
     }
 
     @Override
-    @Transactional
-    public LoginResponseDTO changeContext(Long id, UserContext userContext) {
-        var user = userRetrievalService.getLoggedUserFromContext(userContext);
-        var newContext = contextService.getContextFromUser(user, id);
-
-        var token = authenticationService.generateToken(user, newContext);
-        var refreshToken = authenticationService.generateRefreshToken(user.getId(), newContext.getId());
-
-        return new LoginResponseDTO(true, token, refreshToken);
+    public List<RelationshipDTO> getAllRelationships(UserContext userContext) {
+        return userRetrievalService.getLoggedUserFromContext(userContext)
+                .getUserRelationshipGiving().stream()
+                .map(relationshipMapper::toDTOFromReceiving)
+                .toList();
     }
 
     @Override

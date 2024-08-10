@@ -12,6 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 public class RelationshipDTO {
 
+    private Long id;
+
     private Long oppositeUserId;
     private String displayName;
 
@@ -21,5 +23,4 @@ public class RelationshipDTO {
     private OffsetDateTime activeTo;
 
     private boolean secureValues;
-
 }

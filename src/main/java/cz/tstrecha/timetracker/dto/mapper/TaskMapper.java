@@ -23,7 +23,6 @@ public interface TaskMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "nameSimple", expression = "java(StringUtils.stripAccents(request.getName()))")
-    @Mapping(target = "active", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

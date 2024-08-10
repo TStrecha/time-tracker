@@ -9,7 +9,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
-@Mapper
+import java.time.OffsetDateTime;
+
+@Mapper(imports = OffsetDateTime.class)
 public interface RelationshipMapper {
 
     @Mapping(target = "oppositeUserId", source = "to.id")
@@ -21,6 +23,7 @@ public interface RelationshipMapper {
     RelationshipDTO toDTOFromGiving(UserRelationshipEntity userRelationshipEntity);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "activeFrom", defaultExpression = "java(OffsetDateTime.now())")
     UserRelationshipEntity fromRequest(RelationshipCreateUpdateRequestDTO request, UserEntity from, UserEntity to);
 
     @Mapping(target = "from", ignore = true)

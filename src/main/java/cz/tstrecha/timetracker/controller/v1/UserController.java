@@ -31,14 +31,13 @@ public class UserController {
     private final UserService userService;
 
     @PutMapping
-    @PreAuthorize("hasPermission(#userContext, 'user.update')")
+    @PreAuthorize("hasRole('ACCOUNT_OWNER')")
     public ResponseEntity<LoginResponseDTO> changeUserDetails(@RequestBody UserUpdateDTO userUpdateDTO, @InjectUserContext UserContext userContext){
         return new ResponseEntity<>(userService.changeUserDetails(userUpdateDTO, userContext), HttpStatus.OK);
     }
 
     @PutMapping("/change-password")
     @PreAuthorize("hasRole('ACCOUNT_OWNER')")
-    @CustomPermissionCheck
     public ResponseEntity<LoginResponseDTO> changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO,
                                                            @InjectUserContext UserContext userContext) {
         return new ResponseEntity<>(userService.changePassword(passwordChangeDTO, userContext), HttpStatus.OK);

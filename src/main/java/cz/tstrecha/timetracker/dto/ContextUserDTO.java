@@ -14,7 +14,12 @@ public class ContextUserDTO {
 
     private Long id;
     private String email;
+
+    private String firstName;
+    private String lastName;
+    private String companyName;
     private String fullName;
+
     private AccountType accountType;
     private OffsetDateTime activeFrom;
     private OffsetDateTime activeTo;

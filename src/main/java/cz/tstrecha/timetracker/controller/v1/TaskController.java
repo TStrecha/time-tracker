@@ -71,13 +71,13 @@ public class TaskController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasPermission(#id, 'task', 'task.update')")
-    public ResponseEntity<TaskDTO> deleteTask(@PathVariable("id") Long id, @InjectUserContext UserContext userContext){
+    public ResponseEntity<TaskDTO> deleteTask(@PathVariable("id") Long id){
         return new ResponseEntity<>(taskService.deleteTask(id), HttpStatus.OK);
     }
 
     @PatchMapping("/{id}/reactivate")
     @PreAuthorize("hasPermission(#id, 'task', 'task.update')")
-    public ResponseEntity<TaskDTO> reactivateTask(@PathVariable("id") Long id, @InjectUserContext UserContext userContext){
+    public ResponseEntity<TaskDTO> reactivateTask(@PathVariable("id") Long id){
         return new ResponseEntity<>(taskService.reactivateTask(id), HttpStatus.OK);
     }
 

@@ -20,4 +20,3 @@ public enum TaskFilterField {
 
     private final String fieldName;
 }
-
