@@ -59,8 +59,6 @@ public class RequestBuilder {
     @SneakyThrows
     public ResultActionsHandler performWith(MockMvc mvc) {
         var resultActions = mvc.perform(httpRequestBuilder);
-        var handler = new ResultActionsHandler(resultActions);
-
-        return handler;
+        return new ResultActionsHandler(resultActions);
     }
 }
