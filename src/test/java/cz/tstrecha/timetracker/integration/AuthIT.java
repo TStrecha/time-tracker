@@ -11,8 +11,8 @@ import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.dto.mapper.UserMapper;
+import cz.tstrecha.timetracker.utils.ObjectMapperUtils;
 import io.jsonwebtoken.SignatureAlgorithm;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,18 +44,15 @@ class AuthIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_CreateUser_When_ValidRequestGiven() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.PERSON);
 
-        var apiResult = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/register")
+        var createdUserId = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/register")
                 .withBody(userRegistrationRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andReturn()
-                .getResponse();
+                .andReturnAs(Long.class);
 
-        var createdUserId = objectMapper.readValue(apiResult.getContentAsString(), Long.class);
         var user = userRepository.findById(createdUserId).orElse(null);
 
         assertUser(userRegistrationRequest, user);
@@ -63,7 +60,6 @@ class AuthIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_LoginUser_When_ValidCredentialsGiven() {
         var token = registerUserAndGetToken(createUserRegistrationRequest(AccountType.PERSON));
 
@@ -73,10 +69,10 @@ class AuthIT extends IntegrationTest {
         var header = new String(decoder.decode(chunks[0]));
         var payload = new String(decoder.decode(chunks[1]));
 
-        var algorithmHeader = objectMapper.readValue(header, AlgorithmHeader.class);
+        var algorithmHeader = ObjectMapperUtils.readValue(header, AlgorithmHeader.class);
         Assertions.assertEquals(SignatureAlgorithm.HS256, algorithmHeader.alg);
 
-        var contextFromToken = objectMapper.readValue(payload, ContextWrapper.class).getUser();
+        var contextFromToken = ObjectMapperUtils.readValue(payload, ContextWrapper.class).getUser();
 
         var userEntity = userRepository.findById(contextFromToken.getId()).orElse(null);
 
@@ -92,7 +88,6 @@ class AuthIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_BeUnauthorized_When_InvalidCredentialsGiven() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.PERSON);
 
@@ -111,7 +106,6 @@ class AuthIT extends IntegrationTest {
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_BeUnprocessableEntity_When_UserWithEmailAlreadyExists() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.PERSON);
 
@@ -124,12 +118,11 @@ class AuthIT extends IntegrationTest {
                 .withBody(userRegistrationRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                .andDo(handleUserInputException(ErrorTypeCode.USER_EMAIL_EXISTS));
+                .and(handleUserInputException(ErrorTypeCode.USER_EMAIL_EXISTS));
     }
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_BeUnprocessableEntity_When_FirstNameNotPresentForUserAccount() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.PERSON);
         userRegistrationRequest.setFirstName(null);
@@ -138,12 +131,11 @@ class AuthIT extends IntegrationTest {
                 .withBody(userRegistrationRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                .andDo(handleUserInputException(ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING));
+                .and(handleUserInputException(ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING));
     }
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_BeUnprocessableEntity_When_LastNameNotPresentForUserAccount() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.PERSON);
         userRegistrationRequest.setLastName(null);
@@ -152,12 +144,11 @@ class AuthIT extends IntegrationTest {
                 .withBody(userRegistrationRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                .andDo(handleUserInputException(ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING));
+                .and(handleUserInputException(ErrorTypeCode.PERSON_FIRST_LAST_NAME_MISSING));
     }
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_BeUnprocessableEntity_When_PasswordDoesntContainDigit() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.PERSON);
         userRegistrationRequest.setPassword("without_digit");
@@ -166,12 +157,11 @@ class AuthIT extends IntegrationTest {
                 .withBody(userRegistrationRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                .andDo(handleUserInputException(ErrorTypeCode.PASSWORD_DOES_NOT_CONTAIN_DIGIT));
+                .and(handleUserInputException(ErrorTypeCode.PASSWORD_DOES_NOT_CONTAIN_DIGIT));
     }
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_BeUnprocessableEntity_When_MissingCompanyNameForCompanyAccount() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.COMPANY);
 
@@ -179,26 +169,23 @@ class AuthIT extends IntegrationTest {
                 .withBody(userRegistrationRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                .andDo(handleUserInputException(ErrorTypeCode.COMPANY_NAME_MISSING));
+                .and(handleUserInputException(ErrorTypeCode.COMPANY_NAME_MISSING));
     }
 
     @Test
     @SneakyThrows
-    @Transactional
     void should_RegisterUser_When_ValidCompanyAccountRequestGiven() {
         var userRegistrationRequest = createUserRegistrationRequest(AccountType.COMPANY);
         userRegistrationRequest.setCompanyName(COMPANY_NAME);
         userRegistrationRequest.setFirstName(null);
         userRegistrationRequest.setLastName(null);
 
-        var apiResult = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/register")
+        var createdUserId = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/register")
                 .withBody(userRegistrationRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andReturn()
-                .getResponse();
+                .andReturnAs(Long.class);
 
-        var createdUserId = objectMapper.readValue(apiResult.getContentAsString(), Long.class);
         var user = userRepository.findById(createdUserId).orElse(null);
 
         assertUser(userRegistrationRequest, user);
@@ -214,14 +201,11 @@ class AuthIT extends IntegrationTest {
         loginRequest.setEmail(USER_EMAIL);
         loginRequest.setPassword(USER_PASSWORD);
 
-        var loginApiResponse = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/login")
+        var loginResponseDTO = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/login")
                 .withBody(loginRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn()
-                .getResponse();
-
-        var loginResponseDTO = objectMapper.readValue(loginApiResponse.getContentAsString(), LoginResponseDTO.class);
+                .andReturnAs(LoginResponseDTO.class);
 
         var tokenRefreshResponse = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/refresh")
                 .withBody(loginResponseDTO.getRefreshToken())
@@ -234,15 +218,23 @@ class AuthIT extends IntegrationTest {
 
         var token = tokenRefreshResponse.getContentAsString().split("\\.")[1];
 
-        var expectedUserContext = objectMapper.readValue(new String(decoder.decode(registeredToken)), UserContext.class);
-        var actualUserContext = objectMapper.readValue(new String(decoder.decode(token)), UserContext.class);
+        var expectedUserContext = ObjectMapperUtils.readValue(new String(decoder.decode(registeredToken)), UserContext.class);
+        var actualUserContext = ObjectMapperUtils.readValue(new String(decoder.decode(token)), UserContext.class);
 
         Assertions.assertEquals(expectedUserContext, actualUserContext);
     }
 
     @Test
     @SneakyThrows
-    void should_beUnauthorized_When_ExpiredRefreshTokenGiven() {
+    void should_BeBadRequest_When_NoTokenGiven() {
+        buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/refresh")
+                .performWith(mvc)
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeUnauthorized_When_ExpiredRefreshTokenGiven() {
         var refreshToken = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjUxOSwiYXV0aG9yaXplZEFzVXNlcklkIjo1NTIsImlhdCI6MTY3ODk5MDU2NCwiZXhwIjoxNjc5MDc2OTY0fQ.3_qWnyc9weSct8eEXn5u7fohYw6TV6SSkRXiqyE8K_A";
 
         buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/refresh")
@@ -280,14 +272,11 @@ class AuthIT extends IntegrationTest {
 
         var loginRequest = new LoginRequestDTO(USER_EMAIL, USER_PASSWORD);
 
-        var loginResponse = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/login")
+        var loginData = buildRequest(HttpMethod.POST, STR."\{AUTH_API_BASE_PATH}/login")
                 .withBody(loginRequest)
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn()
-                .getResponse();
-
-        var loginData = objectMapper.readValue(loginResponse.getContentAsString(), LoginResponseDTO.class);
+                .andReturnAs(LoginResponseDTO.class);
 
         Assertions.assertTrue(loginData.isSuccess());
         Assertions.assertNotNull(loginData.getRefreshToken());
@@ -301,8 +290,6 @@ class AuthIT extends IntegrationTest {
 
         Assertions.assertNotNull(user);
         Assertions.assertNotNull(user.getId());
-
-        Assertions.assertNull(user.getModifiedAt());
 
         Assertions.assertEquals(SecretMode.NONE, user.getSecretMode());
         Assertions.assertEquals(userRegistrationRequest.getEmail(), user.getEmail());

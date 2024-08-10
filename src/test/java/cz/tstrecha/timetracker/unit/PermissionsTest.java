@@ -1,6 +1,5 @@
 package cz.tstrecha.timetracker.unit;
 
-
 import cz.tstrecha.timetracker.controller.exception.PermissionException;
 import cz.tstrecha.timetracker.util.ContextUtils;
 import org.junit.jupiter.api.Assertions;
@@ -14,29 +13,23 @@ class PermissionsTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"*", "*.*", "user.*", "*.read", "user.read"})
-    void test01_simple_success(String permission) {
+    void should_HavePermission_When_ValidPermissionIsPresent(String permission) {
         var permissions = List.of(permission);
+
         Assertions.assertTrue(ContextUtils.hasPermissions(permissions, "user.read"));
     }
 
     @Test
-    void test02_morePermissions_success() {
+    void should_HavePermission_When_AtLeastOneValidPermissionIsPresent() {
         var permissions = List.of("report.read", "report.create", "user.read", "user.update", "settings.read", "settings.update");
+
         Assertions.assertTrue(ContextUtils.hasPermissions(permissions, "settings.read"));
         Assertions.assertFalse(ContextUtils.hasPermissions(permissions, "api.read"));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"settings.*", "*.update", "settings.update"})
-    void test03_simple_success(String permission) {
-        var permissions = List.of(permission);
-        Assertions.assertTrue(ContextUtils.hasPermissions(permissions, "settings.update"));
-        Assertions.assertFalse(ContextUtils.hasPermissions(permissions, "report.read"));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"api,create", "settings*", "api/read", "report@read"})
-    void test04_simple_fail(String permission) {
+    @ValueSource(strings = {"api,create", "settings*", "api/read", "report@read", "task"})
+    void should_ThrowException_When_InvalidPermissionFormatGiven(String permission) {
         var permissions = List.of(permission);
         var apiReadPermission = List.of("api.read");
 

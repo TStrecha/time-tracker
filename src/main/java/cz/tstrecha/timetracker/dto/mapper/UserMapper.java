@@ -41,6 +41,9 @@ public abstract class UserMapper {
 
     @Mapping(target = "id", source = "user.id")
     @Mapping(target = "email", source = "user.email")
+    @Mapping(target = "firstName", source = "user.firstName")
+    @Mapping(target = "lastName", source = "user.lastName")
+    @Mapping(target = "companyName", source = "user.companyName")
     @Mapping(target = "fullName", source = "user", qualifiedByName = "mapDisplayName")
     @Mapping(target = "activePermissions", expression = "java(mapActivePermissions(user, loggedAs))")
     @Mapping(target = "authorities", ignore = true)
@@ -48,6 +51,9 @@ public abstract class UserMapper {
 
     @Mapping(target = "id", source = "from.id")
     @Mapping(target = "fullName", source = "from", qualifiedByName = "mapDisplayName")
+    @Mapping(target = "firstName", source = "from.firstName")
+    @Mapping(target = "lastName", source = "from.lastName")
+    @Mapping(target = "companyName", source = "from.companyName")
     @Mapping(target = "email", source = "from.email")
     @Mapping(target = "accountType", source = "from.accountType")
     public abstract ContextUserDTO userRelationshipEntityToContextUserDTO(UserRelationshipEntity relationship);
@@ -88,10 +94,14 @@ public abstract class UserMapper {
     }
 
     protected List<String> mapActivePermissions(UserEntity user, ContextUserDTO loggedAs){
-        return user.getUserRelationshipReceiving().stream()
-                .filter(r -> r.getTo().getId().equals(loggedAs.getId()))
+        if(user.getRole() == UserRole.ADMIN) {
+            return List.of("*");
+        }
+
+        return user.getActiveRelationshipsReceiving().stream()
+                .filter(relationship -> relationship.getFrom().getId().equals(loggedAs.getId()))
                 .findFirst()
                 .map(UserRelationshipEntity::getPermissions)
-                .orElse(List.of());
+                .orElseThrow(() -> new IllegalStateException("Cannot map permissions: relationship between users was not found."));
     }
 }

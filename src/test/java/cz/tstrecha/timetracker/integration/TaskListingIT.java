@@ -1,5 +1,7 @@
 package cz.tstrecha.timetracker.integration;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import cz.tstrecha.timetracker.dto.TaskDTO;
 import cz.tstrecha.timetracker.utils.IntegrationTest;
 import cz.tstrecha.timetracker.constant.SortDirection;
 import cz.tstrecha.timetracker.constant.TaskFilterField;
@@ -7,7 +9,7 @@ import cz.tstrecha.timetracker.constant.TaskStatus;
 import cz.tstrecha.timetracker.dto.TaskCreateRequestDTO;
 import cz.tstrecha.timetracker.dto.filter.TaskFilter;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity;
-import cz.tstrecha.timetracker.service.TaskService;
+import cz.tstrecha.timetracker.utils.RestPageImpl;
 import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +19,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -28,11 +31,10 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static cz.tstrecha.timetracker.utils.RequestBuilder.buildRequest;
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TaskListingIT extends IntegrationTest {
-
-    @Autowired
-    private TaskService taskService;
 
     private List<TaskEntity> allTasks;
 
@@ -41,43 +43,39 @@ class TaskListingIT extends IntegrationTest {
     void createAllTasks(){
         allTasks = new ArrayList<>();
 
-        allTasks.add(new TaskEntity(1L, 493826L, "Refactor Codebase", "Refactor Codebase", "Improve code quality and organization", "Refactor the codebase to improve maintainability and scalability", TaskStatus.NEW, primaryUser, 90L, OffsetDateTime.now(), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(2L, 292734L, "Integrate Social Media Sharing", "Integrate Social Media Sharing", "Allow users to share content on social media", "Integrate social media sharing functionality to allow users to share content on their social media profiles", TaskStatus.DONE, primaryUser, 60L, OffsetDateTime.now().minusDays(2), OffsetDateTime.now(), false));
-        allTasks.add(new TaskEntity(3L, 312765L, "Implement Two-Factor Authentication", "Implement Two-Factor Authentication", "Add an extra layer of security", "Implement two-factor authentication to protect user accounts", TaskStatus.IN_PROGRESS, primaryUser, 90L, OffsetDateTime.now().minusDays(4), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(4L, 483920L, "Integrate Payment Processing", "Integrate Payment Processing", "Allow users to process payments within the application", "Integrate payment processing to enable users to process payments directly within the application", TaskStatus.DONE, primaryUser, 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(5L, 654321L, "Implement OAuth 2.0", "Implement OAuth 2.0", "Allow users to authenticate with third-party services", "Implement OAuth 2.0 to enable users to authenticate with third-party services within the application", TaskStatus.NEW, primaryUser, 90L, OffsetDateTime.now(), OffsetDateTime.now().plusDays(-4), true));
-        allTasks.add(new TaskEntity(6L, 234567L, "Create Custom Reporting", "Create Custom Reporting", "Provide users with customizable reporting options", "Create a custom reporting system to allow users to generate and export reports based on their data within the application", TaskStatus.NEW, primaryUser, 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(7L, 987654L, "Update User Authentication", "Update User Authentication", "Enhance security measures for user authentication", "Implement multi-factor authentication and enhance password encryption to improve user account security", TaskStatus.NEW, secondaryUser, 30L, OffsetDateTime.now().minusDays(100), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(8L, 654321L, "Implement Chat Feature", "Implement Chat Feature", "Enhance communication with real-time chat functionality", "Integrate a chat feature to allow users to communicate in real-time within the application", TaskStatus.NEW, secondaryUser, 55L, OffsetDateTime.now(), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(9L, 876543L, "Optimize Database Queries", "Optimize Database Queries", "Improve performance by optimizing database queries", "Identify and optimize slow-performing database queries to enhance overall system performance", TaskStatus.NEW, tertiaryUser, 50L, OffsetDateTime.now().minusDays(12), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(10L, 543210L, "Integrate Payment Gateway", "Integrate Payment Gateway", "Enable online payments through a third-party payment gateway", "Integrate a secure payment gateway to facilitate online transactions within the application", TaskStatus.NEW, tertiaryUser, 40L, OffsetDateTime.now(), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(11L, 210987L, "Design Responsive UI", "Design Responsive UI", "Create a responsive user interface for various devices", "Implement a responsive design to ensure a seamless user experience across desktops, tablets, and mobile devices", TaskStatus.NEW, tertiaryUser, 35L, OffsetDateTime.now().minusDays(7), OffsetDateTime.now(), true));
-        allTasks.add(new TaskEntity(12L, 435627L, "Navrhněte responzivní uživatelské rozhraní", "Navrhněte responzivní uživatelské rozhraní", "Vytvořte responzivní uživatelské rozhraní pro různá zařízení", "Implementujte responzivní design pro zajištění bezproblémového uživatelského zážitku na stolních počítačích, tabletech a mobilních zařízeních", TaskStatus.NEW, primaryUser, 12L, OffsetDateTime.now().minusYears(4), OffsetDateTime.now().plusDays(100), true));
+        allTasks.add(new TaskEntity(1L, 493826L, "Refactor Codebase", "Refactor Codebase", "Improve code quality and organization", "Refactor the codebase to improve maintainability and scalability", TaskStatus.NEW, primaryUser(), 90L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(2L, 292734L, "Integrate Social Media Sharing", "Integrate Social Media Sharing", "Allow users to share content on social media", "Integrate social media sharing functionality to allow users to share content on their social media profiles", TaskStatus.DONE, primaryUser(), 60L, OffsetDateTime.now().minusDays(2), OffsetDateTime.now(), false));
+        allTasks.add(new TaskEntity(3L, 312765L, "Implement Two-Factor Authentication", "Implement Two-Factor Authentication", "Add an extra layer of security", "Implement two-factor authentication to protect user accounts", TaskStatus.IN_PROGRESS, primaryUser(), 90L, OffsetDateTime.now().minusDays(4), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(4L, 483920L, "Integrate Payment Processing", "Integrate Payment Processing", "Allow users to process payments within the application", "Integrate payment processing to enable users to process payments directly within the application", TaskStatus.DONE, primaryUser(), 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(5L, 654321L, "Implement OAuth 2.0", "Implement OAuth 2.0", "Allow users to authenticate with third-party services", "Implement OAuth 2.0 to enable users to authenticate with third-party services within the application", TaskStatus.NEW, primaryUser(), 90L, OffsetDateTime.now(), OffsetDateTime.now().plusDays(-4), true));
+        allTasks.add(new TaskEntity(6L, 234567L, "Create Custom Reporting", "Create Custom Reporting", "Provide users with customizable reporting options", "Create a custom reporting system to allow users to generate and export reports based on their data within the application", TaskStatus.NEW, primaryUser(), 60L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(7L, 987654L, "Update User Authentication", "Update User Authentication", "Enhance security measures for user authentication", "Implement multi-factor authentication and enhance password encryption to improve user account security", TaskStatus.NEW, secondaryUser(), 30L, OffsetDateTime.now().minusDays(100), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(8L, 654321L, "Implement Chat Feature", "Implement Chat Feature", "Enhance communication with real-time chat functionality", "Integrate a chat feature to allow users to communicate in real-time within the application", TaskStatus.NEW, secondaryUser(), 55L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(9L, 876543L, "Optimize Database Queries", "Optimize Database Queries", "Improve performance by optimizing database queries", "Identify and optimize slow-performing database queries to enhance overall system performance", TaskStatus.NEW, tertiaryUser(), 50L, OffsetDateTime.now().minusDays(12), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(10L, 543210L, "Integrate Payment Gateway", "Integrate Payment Gateway", "Enable online payments through a third-party payment gateway", "Integrate a secure payment gateway to facilitate online transactions within the application", TaskStatus.NEW, tertiaryUser(), 40L, OffsetDateTime.now(), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(11L, 210987L, "Design Responsive UI", "Design Responsive UI", "Create a responsive user interface for various devices", "Implement a responsive design to ensure a seamless user experience across desktops, tablets, and mobile devices", TaskStatus.NEW, tertiaryUser(), 35L, OffsetDateTime.now().minusDays(7), OffsetDateTime.now(), true));
+        allTasks.add(new TaskEntity(12L, 435627L, "Navrhněte responzivní uživatelské rozhraní", "Navrhněte responzivní uživatelské rozhraní", "Vytvořte responzivní uživatelské rozhraní pro různá zařízení", "Implementujte responzivní design pro zajištění bezproblémového uživatelského zážitku na stolních počítačích, tabletech a mobilních zařízeních", TaskStatus.NEW, primaryUser(), 12L, OffsetDateTime.now().minusYears(4), OffsetDateTime.now().plusDays(100), true));
 
         taskRepository.saveAll(allTasks);
     }
 
-    @SneakyThrows
-    @Transactional
     @ParameterizedTest
-    @MethodSource("filterData")
+    @MethodSource("provideFilterData")
     void should_FilterTasks_When_FilterProvided(TaskFilterField taskFilterField, String value, List<Long> rightIndices) {
-        TaskFilter taskFilter = new TaskFilter(Map.of(taskFilterField, value), TaskFilterField.ID, SortDirection.ASC, 5, 0);
-        var tasks = taskService.listTasks(taskFilter, getPrimaryUserAuthorizationToken().getContext()).toList();
+        var taskFilter = new TaskFilter(Map.of(taskFilterField, value), TaskFilterField.ID, SortDirection.ASC, 5, 0);
+        var tasks = sendTaskListRequest(authorizationOf(primaryUser()), taskFilter).toList();
 
         Assertions.assertEquals(rightIndices.size(), tasks.size());
         Assertions.assertTrue(tasks.stream().map(TaskCreateRequestDTO::getId).allMatch(rightIndices::contains));
     }
 
-    @SneakyThrows
-    @Transactional
     @ParameterizedTest
-    @MethodSource("sortingData")
+    @MethodSource("provideSortingData")
     <U extends Comparable<? super U>> void should_SortTasks_When_SortFieldProvided(TaskFilterField sortField,
                                                                                    Function<TaskEntity, ? extends U> mappingFunction,
                                                                                    SortDirection sortDirection) {
         var taskFilterAsc = new TaskFilter(Map.of(), sortField, sortDirection, Integer.MAX_VALUE, 0);
-        var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(primaryUser.getId())).toList();
+        var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(primaryUser().getId())).toList();
 
         Comparator<TaskEntity> comparator;
         if(sortDirection == SortDirection.ASC) {
@@ -86,7 +84,8 @@ class TaskListingIT extends IntegrationTest {
             comparator = Comparator.comparing(mappingFunction).reversed();
         }
 
-        var tasksSortedAsc = taskService.listTasks(taskFilterAsc, getPrimaryUserAuthorizationToken().getContext()).toList();
+        var tasksSortedAsc = sendTaskListRequest(authorizationOf(primaryUser()), taskFilterAsc).toList();
+
         var sortedManuallyAsc = currentUserTasks.stream().sorted(comparator).toList();
 
         Assertions.assertEquals(currentUserTasks.size(), tasksSortedAsc.size());
@@ -100,14 +99,12 @@ class TaskListingIT extends IntegrationTest {
     }
 
     @Test
-    @SneakyThrows
-    @Transactional
     void should_SortFilteredTasks_When_SortAndFilterGiven() {
         var taskFilter = new TaskFilter(Map.of(TaskFilterField.STATUS, "NEW"), TaskFilterField.DESCRIPTION, SortDirection.DESC, Integer.MAX_VALUE, 0);
 
-        var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(primaryUser.getId())).toList();
+        var currentUserTasks = allTasks.stream().filter(task -> task.getUser().getId().equals(primaryUser().getId())).toList();
 
-        var tasks = taskService.listTasks(taskFilter, getPrimaryUserAuthorizationToken().getContext());
+        var tasks = sendTaskListRequest(authorizationOf(primaryUser()), taskFilter);
 
         var manuallySorted = currentUserTasks.stream()
                 .filter(task -> task.getStatus() == TaskStatus.NEW)
@@ -123,14 +120,12 @@ class TaskListingIT extends IntegrationTest {
     }
 
     @Test
-    @SneakyThrows
-    @Transactional
     void should_ReturnPagedTasks_When_MultiplePagesAreAvailable() {
         var firstPage = new TaskFilter(Map.of(), TaskFilterField.ID, SortDirection.ASC, 5, 0);
         var secondPage = new TaskFilter(Map.of(), TaskFilterField.ID, SortDirection.ASC, 5, 1);
 
-        var tasksFirstPage = taskService.listTasks(firstPage, getPrimaryUserAuthorizationToken().getContext());
-        var tasksSecondPage = taskService.listTasks(secondPage, getPrimaryUserAuthorizationToken().getContext());
+        var tasksFirstPage = sendTaskListRequest(authorizationOf(primaryUser()), firstPage);
+        var tasksSecondPage = sendTaskListRequest(authorizationOf(primaryUser()), secondPage);
 
         Assertions.assertEquals(7, tasksFirstPage.getTotalElements());
         Assertions.assertEquals(2, tasksFirstPage.getTotalPages());
@@ -140,26 +135,35 @@ class TaskListingIT extends IntegrationTest {
         Assertions.assertEquals(2, tasksSecondPage.getNumberOfElements());
     }
 
-    @SneakyThrows
-    @Transactional
     @ParameterizedTest
-    @MethodSource("userData")
-    void should_ReturnTasksForUserInContext_When_LoggedAsAnotherUser(Integer userIndex, Integer expectedTaskCount) {
+    @MethodSource("provideUserData")
+    void should_ReturnTasksForUserInContext_When_LoggedAsAnotherUser(Integer userIndex, Long expectedTaskCount) {
         var authorizedAs = switch(userIndex) {
-            case 0 -> primaryUser;
-            case 1 -> secondaryUser;
-            case 2 -> tertiaryUser;
-            case 3 -> adminUser;
+            case 0 -> primaryUser();
+            case 1 -> secondaryUser();
+            case 2 -> tertiaryUser();
+            case 3 -> adminUser();
             default -> null;
         };
 
-        TaskFilter taskFilter = new TaskFilter(Map.of(), TaskFilterField.ID, SortDirection.ASC, 100, 0);
-        var tasks = taskService.listTasks(taskFilter, getAuthorizationToken(primaryUser, authorizedAs).getContext()).toList();
+        var taskFilter = new TaskFilter(Map.of(), TaskFilterField.ID, SortDirection.ASC, 100, 0);
+        var authorization = authorizationOf(primaryUser()).loggedAs(authorizedAs);
+        var tasks = sendTaskListRequest(authorization, taskFilter);
 
-        Assertions.assertEquals(expectedTaskCount, tasks.size());
+        Assertions.assertEquals(expectedTaskCount, tasks.getTotalElements());
     }
 
-    private static Stream<Arguments> filterData(){
+    @SneakyThrows
+    private RestPageImpl<TaskDTO> sendTaskListRequest(UserAuthorizationContextHolder contextHolder, TaskFilter filter) {
+        return buildRequest(HttpMethod.POST, "/task/list")
+                .withAuthorization(contextHolder)
+                .withBody(filter)
+                .performWith(mvc)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturnAs(new TypeReference<>() { });
+    }
+
+    private static Stream<Arguments> provideFilterData(){
         return Stream.of(
                 Arguments.of(TaskFilterField.ID, "2", List.of(2L)),
                 Arguments.of(TaskFilterField.CUSTOM_ID, "9", List.of(1L, 2L, 4L)),
@@ -182,7 +186,7 @@ class TaskListingIT extends IntegrationTest {
         );
     }
 
-    private static Stream<Arguments> sortingData() {
+    private static Stream<Arguments> provideSortingData() {
 
         Function<TaskEntity, ?> ticketIdMapper = TaskEntity::getId;
         Function<TaskEntity, ?> ticketEstimateMapper = TaskEntity::getEstimate;
@@ -202,14 +206,14 @@ class TaskListingIT extends IntegrationTest {
         );
     }
 
-    private Stream<Arguments> userData() {
+    private Stream<Arguments> provideUserData() {
 
         return Stream.of(
-                Arguments.of(0, 7),
-                Arguments.of(1, 2),
-                Arguments.of(2, 3),
-                Arguments.of(3, 0),
-                Arguments.of(4, 7)
+                Arguments.of(0, 7L),
+                Arguments.of(1, 2L),
+                Arguments.of(2, 3L),
+                Arguments.of(3, 0L),
+                Arguments.of(4, 7L)
         );
     }
 }

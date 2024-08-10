@@ -10,6 +10,9 @@ import java.util.List;
 
 public interface UserSettingsRepository extends JpaRepository<UserSettingsEntity, Long> {
 
+    @Query("SELECT us.user.id FROM user_settings us WHERE us.id = :settingsId")
+    Long findUserId(@Param("settingsId") Long settingsId);
+
     @Query("SELECT us FROM user_settings us WHERE us.user = :user AND (us.validTo IS NULL OR us.validTo > NOW())")
     List<UserSettingsEntity> findActiveUserSettings(@Param("user") UserEntity user);
 

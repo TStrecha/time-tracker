@@ -2,8 +2,8 @@ package cz.tstrecha.timetracker.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import cz.tstrecha.timetracker.utils.IntegrationTest;
 import cz.tstrecha.timetracker.annotation.CustomPermissionCheck;
+import cz.tstrecha.timetracker.utils.ObjectMapperUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -13,9 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.access.prepost.PreFilter;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -28,7 +30,11 @@ import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
-class SecurityIT extends IntegrationTest {
+@SpringBootTest
+@ActiveProfiles("test")
+class ControllerSecurityIT {
+
+    private static final String OUTPUT_FILE_PATH = "target/security_result.json";
 
     public static List<String> IGNORED_DEFINITIONS = List.of(
             "org.springdoc.webmvc.api.OpenApiWebMvcResource#openapiJson(HttpServletRequest, String, Locale)",
@@ -62,15 +68,14 @@ class SecurityIT extends IntegrationTest {
         softly.assertAll();
     }
 
-    @SneakyThrows
-    private void storeSecurityResultsInFile(List<ApiCheckResult> handlerResults) {
-        var file = new File("security_result.json");
+    private void storeSecurityResultsInFile(List<ApiCheckResult> handlerResults) throws Exception {
+        var file = new File(OUTPUT_FILE_PATH);
         if(!file.exists()) {
             file.createNewFile();
         }
 
         var writer = new BufferedWriter(new FileWriter(file));
-        writer.write(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(handlerResults));
+        writer.write(ObjectMapperUtils.writeValueAsPrettyString(handlerResults));
 
         writer.close();
     }
@@ -80,7 +85,7 @@ class SecurityIT extends IntegrationTest {
             return new ApiCheckResult(mapping, handler, CheckResultStatus.IGNORED, "This endpoint is ignored because it is defined in other sources.");
         }
 
-        if (Arrays.stream(handler.getMethod().getAnnotations()).anyMatch(annotation -> annotation instanceof CustomPermissionCheck)) {
+        if (handler.getMethodAnnotation(CustomPermissionCheck.class) != null) {
             return new ApiCheckResult(mapping, handler, CheckResultStatus.CUSTOM_PERMISSION_CHECK, null);
         }
 

@@ -1,10 +1,12 @@
 package cz.tstrecha.timetracker.controller.v1;
 
 import cz.tstrecha.timetracker.annotation.CustomPermissionCheck;
+import cz.tstrecha.timetracker.annotation.InjectUserContext;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.constant.UserRole;
 import cz.tstrecha.timetracker.dto.LoginRequestDTO;
 import cz.tstrecha.timetracker.dto.LoginResponseDTO;
+import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.UserRegistrationRequestDTO;
 import cz.tstrecha.timetracker.service.AuthenticationService;
 import cz.tstrecha.timetracker.service.UserService;
@@ -15,8 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -48,5 +52,11 @@ public class AuthController {
     @CustomPermissionCheck
     public ResponseEntity<LoginResponseDTO> refreshToken(@RequestBody String token){
         return new ResponseEntity<>(authenticationService.refreshToken(token), HttpStatus.OK);
+    }
+
+    @PutMapping("/context")
+    @CustomPermissionCheck
+    public ResponseEntity<LoginResponseDTO> changeContext(@RequestParam Long id, @InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(authenticationService.changeContext(id, userContext), HttpStatus.OK);
     }
 }

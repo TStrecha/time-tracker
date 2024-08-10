@@ -70,4 +70,11 @@ public interface AuthenticationService {
      * @return
      */
     Optional<Claims> extractClaims(String authToken);
+
+    /**
+     * @param id
+     * @param userContext
+     * @return
+     */
+    LoginResponseDTO changeContext(Long id, UserContext userContext);
 }

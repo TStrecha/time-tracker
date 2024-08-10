@@ -2,7 +2,7 @@ package cz.tstrecha.timetracker.service.impl;
 
 import cz.tstrecha.timetracker.constant.ErrorTypeCode;
 import cz.tstrecha.timetracker.controller.exception.UserInputException;
-import cz.tstrecha.timetracker.dto.SettingsCreateUpdateDTO;
+import cz.tstrecha.timetracker.dto.SettingsDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
 import cz.tstrecha.timetracker.dto.mapper.SettingsMapper;
 import cz.tstrecha.timetracker.repository.UserSettingsRepository;
@@ -26,28 +26,37 @@ public class SettingsServiceImpl implements SettingsService {
 
     @Override
     @Transactional
-    public SettingsCreateUpdateDTO createSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, UserContext userContext){
+    public SettingsDTO createSettings(SettingsDTO settingsRequest, UserContext userContext){
         var user = userRetrievalService.getUserFromContext(userContext);
 
-        if (settingsCreateUpdateDTO.getValidTo() != null && settingsCreateUpdateDTO.getValidFrom().isAfter(settingsCreateUpdateDTO.getValidTo())){
-            throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, SettingsCreateUpdateDTO.class);
+        if (settingsRequest.getValidTo() != null && settingsRequest.getValidFrom().isAfter(settingsRequest.getValidTo())){
+            throw new UserInputException(
+                    "Valid from cannot be after valid to.",
+                    ErrorTypeCode.VALID_FROM_AFTER_VALID_TO,
+                    SettingsDTO.class);
         }
 
-        if (userSettingsRepository.existsByUserAndName(user, settingsCreateUpdateDTO.getName())){
-            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, SettingsCreateUpdateDTO.class);
+        if (userSettingsRepository.existsByUserAndName(user, settingsRequest.getName())){
+            throw new UserInputException(
+                    "There is already a setting with this name.",
+                    ErrorTypeCode.SETTING_NAME_NOT_UNIQUE,
+                    SettingsDTO.class);
         }
 
         userSettingsRepository.findActiveUserSettings(user)
             .forEach(setting -> {
                 if (setting.getValidTo() == null){
-                    setting.setValidTo(settingsCreateUpdateDTO.getValidFrom().minusDays(1));
+                    setting.setValidTo(settingsRequest.getValidFrom().minusDays(1));
                     userSettingsRepository.save(setting);
-                } else if (setting.getValidTo().isAfter(settingsCreateUpdateDTO.getValidFrom())) {
-                    throw new UserInputException("There are active settings that would new settings intersect with.", ErrorTypeCode.INTERSECTS_WITH_OTHER_SETTINGS, SettingsCreateUpdateDTO.class);
+                } else if (setting.getValidTo().isAfter(settingsRequest.getValidFrom())) {
+                    throw new UserInputException(
+                            "There are active settings that would new settings intersect with.",
+                            ErrorTypeCode.INTERSECTS_WITH_OTHER_SETTINGS,
+                            SettingsDTO.class);
                 }
             });
 
-        var newSetting = settingsMapper.toEntity(settingsCreateUpdateDTO, user);
+        var newSetting = settingsMapper.toEntity(settingsRequest, user);
         newSetting = userSettingsRepository.save(newSetting);
 
         return settingsMapper.toDTO(newSetting);
@@ -55,23 +64,35 @@ public class SettingsServiceImpl implements SettingsService {
 
     @Override
     @Transactional
-    public SettingsCreateUpdateDTO updateSetting(SettingsCreateUpdateDTO settingsCreateUpdateDTO, UserContext userContext) {
-        var setting = userSettingsRepository.findById(settingsCreateUpdateDTO.getId())
-                .orElseThrow(() -> new UserInputException("Setting not found by id", ErrorTypeCode.SETTING_NOT_FOUND_BY_ID, SettingsCreateUpdateDTO.class));
+    public SettingsDTO updateSettings(Long id, SettingsDTO settingsRequest, UserContext userContext) {
+        var setting = userSettingsRepository.findById(id)
+                .orElseThrow(() -> new UserInputException(
+                        "Setting not found by id",
+                        ErrorTypeCode.SETTING_NOT_FOUND_BY_ID,
+                        SettingsDTO.class));
 
         if (setting.getValidTo() != null && setting.getValidTo().isBefore(LocalDate.now())){
-            throw new UserInputException("You cannot change no longer valid settings.", ErrorTypeCode.SETTING_NO_LONGER_VALID, SettingsCreateUpdateDTO.class);
+            throw new UserInputException(
+                    "You cannot change no longer valid settings.",
+                    ErrorTypeCode.SETTING_NO_LONGER_VALID,
+                    SettingsDTO.class);
         }
 
-        if (settingsCreateUpdateDTO.getValidTo() != null && settingsCreateUpdateDTO.getValidTo().isBefore(settingsCreateUpdateDTO.getValidFrom())){
-            throw new UserInputException("Valid from cannot be after valid to.", ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, SettingsCreateUpdateDTO.class);
+        if (settingsRequest.getValidTo() != null && settingsRequest.getValidTo().isBefore(settingsRequest.getValidFrom())){
+            throw new UserInputException(
+                    "Valid from cannot be after valid to.",
+                    ErrorTypeCode.VALID_FROM_AFTER_VALID_TO,
+                    SettingsDTO.class);
         }
 
-        if (userSettingsRepository.existsByUserIdAndNameAndIdIsNot(userContext.getCurrentUserId(), settingsCreateUpdateDTO.getName(), settingsCreateUpdateDTO.getId())){
-            throw new UserInputException("There is already a setting with this name.", ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, SettingsCreateUpdateDTO.class);
+        if (userSettingsRepository.existsByUserIdAndNameAndIdIsNot(userContext.getCurrentUserId(), settingsRequest.getName(), id)){
+            throw new UserInputException(
+                    "There is already a setting with this name.",
+                    ErrorTypeCode.SETTING_NAME_NOT_UNIQUE,
+                    SettingsDTO.class);
         }
 
-        settingsMapper.updateSetting(settingsCreateUpdateDTO, setting);
+        settingsMapper.updateSetting(settingsRequest, setting);
         userSettingsRepository.save(setting);
 
         return settingsMapper.toDTO(setting);

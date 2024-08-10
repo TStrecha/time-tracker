@@ -16,11 +16,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpecificationExecutor<TaskEntity> {
+
+    @Query("SELECT t.user.id FROM task t WHERE t.id = :taskId")
+    Long findUserId(@Param("taskId") Long taskId);
 
     @Query(value = "SELECT * FROM task WHERE (name_simple ILIKE :query OR custom_id ILIKE :query" +
             " OR CONCAT(custom_id, CONCAT(' - ', name_simple)) ILIKE :query ) " +

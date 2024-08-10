@@ -12,9 +12,9 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SettingsCreateUpdateDTO {
+public class SettingsDTO {
 
-    private long id;
+    private Long id;
 
     private LocalDate validFrom;
     private LocalDate validTo;

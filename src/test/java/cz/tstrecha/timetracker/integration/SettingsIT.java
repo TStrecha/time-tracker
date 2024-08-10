@@ -1,283 +1,194 @@
-//package cz.tstrecha.timetracker.integration;
-//
-//import cz.tstrecha.timetracker.utils.IntegrationTest;
-//import cz.tstrecha.timetracker.constant.ErrorTypeCode;
-//import cz.tstrecha.timetracker.controller.exception.UserInputException;
-//import cz.tstrecha.timetracker.dto.SettingsCreateUpdateDTO;
-//import cz.tstrecha.timetracker.dto.mapper.UserMapper;
-//import cz.tstrecha.timetracker.service.SettingsService;
-//import jakarta.transaction.Transactional;
-//import lombok.SneakyThrows;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//
-//import java.math.BigDecimal;
-//import java.time.LocalDate;
-//
-//import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.junit.jupiter.api.Assertions.assertNotNull;
-//import static org.junit.jupiter.api.Assertions.assertNull;
-//import static org.junit.jupiter.api.Assertions.assertThrows;
-//
-//class SettingsIT extends IntegrationTest {
-//
-//    @Autowired
-//    private SettingsService settingsService;
-//
-//    @Autowired
-//    private UserMapper userMapper;
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test01_createSetting_success() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(null);
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var settingDTO = settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        assertNotNull(settingDTO.getValidFrom());
-//        assertNull(settingDTO.getValidTo());
-//        assertEquals(BigDecimal.valueOf(100), settingDTO.getMoneyPerHour());
-//        assertEquals(BigDecimal.valueOf(16000), settingDTO.getMoneyPerMonth());
-//        assertEquals("TimeTracker", settingDTO.getName());
-//        assertEquals("Test note", settingDTO.getNote());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test02_createSetting_fail_toIsBeforeFrom() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(LocalDate.now().minusDays(1));
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var context = userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()));
-//
-//        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, context));
-//
-//        assertEquals(ErrorTypeCode.VALID_FROM_AFTER_VALID_TO, exception.getErrorTypeCode());
-//        assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
-//        assertEquals("Valid from cannot be after valid to.", exception.getMessage());
-//        assertNotNull(exception.getLocalizedMessage());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test03_createSetting_fail_settingWithSameNameAlreadyExists() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(null);
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var context = userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()));
-//
-//        settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, context));
-//
-//        assertEquals(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
-//        assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
-//        assertEquals("There is already a setting with this name.", exception.getMessage());
-//        assertNotNull(exception.getLocalizedMessage());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test04_createSetting_fail_settingsIntersects() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(LocalDate.now().plusDays(5));
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var context = userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()));
-//
-//        settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//        request.setName("TimeTracker1");
-//        request.setValidFrom(LocalDate.now().plusDays(4));
-//        var exception = assertThrows(UserInputException.class, () -> settingsService.createSetting(request, context));
-//
-//        assertEquals(ErrorTypeCode.INTERSECTS_WITH_OTHER_SETTINGS, exception.getErrorTypeCode());
-//        assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
-//        assertEquals("There are active settings that would new settings intersect with.", exception.getMessage());
-//        assertNotNull(exception.getLocalizedMessage());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test05_updateSetting_success() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(null);
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var settingDTO = settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        request.setId(settingDTO.getId());
-//        request.setValidTo(LocalDate.now().plusMonths(6));
-//        request.setMoneyPerHour(BigDecimal.valueOf(200));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(32000));
-//        request.setName("TimeTrackerUpdated");
-//        request.setNote("Test note updated");
-//
-//        var updatedSettingDTO = settingsService.updateSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        assertNotNull(updatedSettingDTO.getValidFrom());
-//        assertEquals(updatedSettingDTO.getValidFrom().plusMonths(6), updatedSettingDTO.getValidTo());
-//        assertEquals(BigDecimal.valueOf(200), updatedSettingDTO.getMoneyPerHour());
-//        assertEquals(BigDecimal.valueOf(32000), updatedSettingDTO.getMoneyPerMonth());
-//        assertEquals("TimeTrackerUpdated", updatedSettingDTO.getName());
-//        assertEquals("Test note updated", updatedSettingDTO.getNote());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test06_updateSetting_fail_settingNotFoundById() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(10);
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(null);
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var context = userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()));
-//
-//        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, context));
-//
-//        assertEquals(ErrorTypeCode.SETTING_NOT_FOUND_BY_ID, exception.getErrorTypeCode());
-//        assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
-//        assertEquals("Setting not found by id", exception.getMessage());
-//        assertNotNull(exception.getLocalizedMessage());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test07_updateSetting_fail_updatingNoLongerValidSetting() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now().minusDays(2));
-//        request.setValidTo(LocalDate.now().minusDays(1));
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var context =  userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()));
-//        var settingDTO = settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        request.setId(settingDTO.getId());
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(null);
-//        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, context));
-//
-//        assertEquals(ErrorTypeCode.SETTING_NO_LONGER_VALID, exception.getErrorTypeCode());
-//        assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
-//        assertEquals("You cannot change no longer valid settings.", exception.getMessage());
-//        assertNotNull(exception.getLocalizedMessage());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test08_updateSetting_fail_validFromBeforeTo() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now().minusDays(2));
-//        request.setValidTo(LocalDate.now().minusDays(1));
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var context = userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()));
-//        var settingDTO = settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        request.setId(settingDTO.getId());
-//        request.setValidFrom(LocalDate.now().plusDays(1));
-//        request.setValidTo(LocalDate.now());
-//        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, context));
-//        assertEquals(ErrorTypeCode.SETTING_NO_LONGER_VALID, exception.getErrorTypeCode());
-//        assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
-//        assertEquals("You cannot change no longer valid settings.", exception.getMessage());
-//        assertNotNull(exception.getLocalizedMessage());
-//    }
-//
-//    @Test
-//    @SneakyThrows
-//    @Transactional
-//    void test09_updateSetting_fail_alreadySettingWithSameName() {
-//        var user = userRepository.findById(mockUsers(1).getFirst()).orElseThrow();
-//
-//        SettingsCreateUpdateDTO request = new SettingsCreateUpdateDTO();
-//        request.setId(0);
-//        request.setValidFrom(LocalDate.now());
-//        request.setValidTo(null);
-//        request.setMoneyPerHour(BigDecimal.valueOf(100));
-//        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
-//        request.setName("TimeTracker");
-//        request.setNote("Test note");
-//
-//        var context = userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst()));
-//        var settingDTO = settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        request.setName("TimeTracker1");
-//        request.setValidFrom(LocalDate.now().plusMonths(1));
-//        settingsService.createSetting(request, userMapper.toContext(user, userMapper.userRelationshipEntityToContextUserDTO(user.getUserRelationshipReceiving().getFirst())));
-//
-//        request.setId(settingDTO.getId());
-//        request.setName("TimeTracker1");
-//
-//        var exception = assertThrows(UserInputException.class, () -> settingsService.updateSetting(request, context));
-//
-//        assertEquals(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE, exception.getErrorTypeCode());
-//        assertEquals("SettingsCreateUpdateDTO", exception.getEntityType());
-//        assertEquals("There is already a setting with this name.", exception.getMessage());
-//        assertNotNull(exception.getLocalizedMessage());
-//    }
-//}
+package cz.tstrecha.timetracker.integration;
+
+import cz.tstrecha.timetracker.utils.IntegrationTest;
+import cz.tstrecha.timetracker.constant.ErrorTypeCode;
+import cz.tstrecha.timetracker.dto.SettingsDTO;
+import cz.tstrecha.timetracker.utils.ResultActionsHandler;
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Objects;
+
+import static cz.tstrecha.timetracker.utils.RequestBuilder.buildRequest;
+import static cz.tstrecha.timetracker.utils.assertions.UserInputExceptionHandler.handleUserInputException;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+class SettingsIT extends IntegrationTest {
+
+    private final static String SETTINGS_API_BASE_PATH = "/settings";
+
+    @Test
+    @SneakyThrows
+    void should_CreateSettings_When_ValidRequestGiven() {
+        var request = buildSettingsRequest();
+        var settings = createSettings(request);
+
+        assertSettings(request, settings);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeUnprocessableEntity_When_ValidToIsBeforeValidFrom() {
+        var request = buildSettingsRequest(LocalDate.now().minusDays(5));
+        sendCreateRequest(request)
+                .andExpect(status().isUnprocessableEntity())
+                .andDo(handleUserInputException(ErrorTypeCode.VALID_FROM_AFTER_VALID_TO));
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeUnprocessableEntity_When_SettingsWithSameNameExistsForSameUser() {
+        var request = buildSettingsRequest();
+        createSettings(request);
+
+        sendCreateRequest(request)
+                .andExpect(status().isUnprocessableEntity())
+                .andDo(handleUserInputException(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE));
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeUnprocessableEntity_When_NewSettingsWouldIntersectWithExistingOnes() {
+        var request = buildSettingsRequest(LocalDate.now().plusDays(5));
+        sendCreateRequest(request);
+
+        var secondRequest = buildSettingsRequest(null, "TimeTracker2", LocalDate.now().plusDays(1));
+        sendCreateRequest(secondRequest)
+                .andExpect(status().isUnprocessableEntity())
+                .andDo(handleUserInputException(ErrorTypeCode.INTERSECTS_WITH_OTHER_SETTINGS));
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeSuccessfullyUpdateSettings_When_ValidRequestGiven() {
+        var request = buildSettingsRequest();
+        var settings = createSettings(request);
+
+        var updateRequest = buildSettingsRequest(settings.getId(), "TimeTrackerUpdated", LocalDate.now().plusMonths(6));
+        updateRequest.setMoneyPerHour(BigDecimal.valueOf(200));
+        updateRequest.setMoneyPerMonth(BigDecimal.valueOf(32000));
+        updateRequest.setNote("Test note updated");
+
+        var updatedSettings = sendUpdateRequest(updateRequest)
+                .andExpect(status().isOk())
+                .andReturnAs(SettingsDTO.class);
+
+        assertSettings(updateRequest, updatedSettings);
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeForbidden_When_SettingsNotFound() {
+        var request = buildSettingsRequest();
+        var settings = createSettings(request);
+
+        var updateRequest = buildSettingsRequest(settings.getId() + 1, null, null);
+        sendUpdateRequest(updateRequest)
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeUnprocessableEntity_When_SettingsAreNoLongerValid() {
+        var request = buildSettingsRequest(LocalDate.now().minusDays(1));
+        var settings = createSettings(request);
+
+        var updateRequest = buildSettingsRequest(settings.getId(), "Updated", LocalDate.now());
+        sendUpdateRequest(updateRequest)
+                .andExpect(status().isUnprocessableEntity())
+                .andDo(handleUserInputException(ErrorTypeCode.SETTING_NO_LONGER_VALID));
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeUnprocessableEntity_When_UpdatedWithValidToBeforeValidFrom() {
+        var request = buildSettingsRequest();
+        var settings = createSettings(request);
+
+        var updateRequest = buildSettingsRequest(settings.getId(), "Updated", LocalDate.now().minusDays(5));
+        sendUpdateRequest(updateRequest)
+                .andExpect(status().isUnprocessableEntity())
+                .andDo(handleUserInputException(ErrorTypeCode.VALID_FROM_AFTER_VALID_TO));
+    }
+
+    @Test
+    @SneakyThrows
+    void should_BeUnprocessableEntity_When_UpdatedSettingsNameToNonUniqueNameForCurrentUser() {
+        var firstRequest = buildSettingsRequest();
+        var firstSettings = createSettings(firstRequest);
+
+        var secondRequest = buildSettingsRequest(null, "TimeTracker2", LocalDate.now().plusMonths(1));
+        var secondSettings = createSettings(secondRequest);
+
+        var updateRequest = buildSettingsRequest(secondSettings.getId(), firstSettings.getName(), LocalDate.now().plusMonths(1));
+        sendUpdateRequest(updateRequest)
+                .andExpect(status().isUnprocessableEntity())
+                .and(handleUserInputException(ErrorTypeCode.SETTING_NAME_NOT_UNIQUE));
+    }
+
+    private void assertSettings(SettingsDTO expected, SettingsDTO actual) {
+        Assertions.assertNotNull(actual);
+
+        if(expected.getId() == null) {
+            Assertions.assertNotNull(actual.getId());
+        } else {
+            Assertions.assertEquals(expected.getId(), actual.getId());
+        }
+
+        Assertions.assertEquals(expected.getName(), actual.getName());
+        Assertions.assertEquals(expected.getNote(), actual.getNote());
+        Assertions.assertEquals(expected.getValidFrom(), actual.getValidFrom());
+        Assertions.assertEquals(expected.getValidTo(), actual.getValidTo());
+        Assertions.assertEquals(expected.getMoneyPerHour(), actual.getMoneyPerHour());
+        Assertions.assertEquals(expected.getMoneyPerMonth(), actual.getMoneyPerMonth());
+
+    }
+
+    private SettingsDTO createSettings(SettingsDTO request) throws Exception {
+        return sendCreateRequest(request)
+                .andExpect(status().isCreated())
+                .andReturnAs(SettingsDTO.class);
+    }
+
+    private ResultActionsHandler sendCreateRequest(SettingsDTO request) {
+        return sendCreateRequest(request, authorizationOf(primaryUser()));
+    }
+
+    private ResultActionsHandler sendCreateRequest(SettingsDTO request, UserAuthorizationContextHolder contextHolder) {
+        return buildRequest(HttpMethod.POST, SETTINGS_API_BASE_PATH)
+                .withAuthorization(contextHolder)
+                .withBody(request)
+                .performWith(mvc);
+    }
+
+    private ResultActionsHandler sendUpdateRequest(SettingsDTO request) {
+        return buildRequest(HttpMethod.PUT, STR."\{SETTINGS_API_BASE_PATH}/{taskId}", request.getId())
+                .withAuthorization(ofPrimaryUser())
+                .withBody(request)
+                .performWith(mvc);
+    }
+
+    private SettingsDTO buildSettingsRequest() {
+        return buildSettingsRequest(null);
+    }
+
+    private SettingsDTO buildSettingsRequest(LocalDate validTo) {
+        return buildSettingsRequest(null, null, validTo);
+    }
+
+    private SettingsDTO buildSettingsRequest(Long id, String name, LocalDate validTo) {
+        var request = new SettingsDTO();
+        request.setId(id);
+        request.setValidFrom(LocalDate.now().minusDays(1));
+        request.setValidTo(validTo);
+        request.setMoneyPerHour(BigDecimal.valueOf(100));
+        request.setMoneyPerMonth(BigDecimal.valueOf(16000));
+        request.setName(Objects.requireNonNullElse(name, "TimeTracker1"));
+        request.setNote("Test note");
+        return request;
+    }
+}

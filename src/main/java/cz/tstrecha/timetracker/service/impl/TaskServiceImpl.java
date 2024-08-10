@@ -15,6 +15,7 @@ import cz.tstrecha.timetracker.repository.TaskRepository;
 import cz.tstrecha.timetracker.repository.entity.TaskEntity;
 import cz.tstrecha.timetracker.service.TaskService;
 import cz.tstrecha.timetracker.service.UserRetrievalService;
+import cz.tstrecha.timetracker.util.FilterUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +42,9 @@ public class TaskServiceImpl implements TaskService {
     public TaskDTO createTask(TaskCreateRequestDTO taskRequest, UserContext userContext) {
         var user = userRetrievalService.getUserFromContext(userContext);
         var taskEntity = taskMapper.fromRequest(taskRequest, user);
+
         taskEntity = taskRepository.save(taskEntity);
+
         return taskMapper.toDTO(taskEntity);
     }
 
@@ -53,7 +56,7 @@ public class TaskServiceImpl implements TaskService {
         var taskEntity = new TaskEntity();
         taskEntity.setUser(user);
 
-        if (Objects.requireNonNull(identifierType) == IdentifierType.NAME) {
+        if (identifierType == IdentifierType.NAME) {
             taskEntity.setName(identifierValue);
             taskEntity.setNameSimple(StringUtils.stripAccents(identifierValue));
         } else if (identifierType == IdentifierType.CUSTOM_ID) {
@@ -80,7 +83,9 @@ public class TaskServiceImpl implements TaskService {
             throw new IllegalEntityStateException("Task is already done", ErrorTypeCode.TASK_ALREADY_DONE, TaskCreateRequestDTO.class);
         }
         taskMapper.updateTask(taskRequest, taskEntity);
-        taskRepository.save(taskEntity);
+
+        taskEntity = taskRepository.save(taskEntity);
+
         return taskMapper.toDTO(taskEntity);
     }
 
@@ -126,7 +131,7 @@ public class TaskServiceImpl implements TaskService {
             return List.of();
         }
 
-        var databaseSearchQuery = STR."%\{StringUtils.strip(query)}%";
+        var databaseSearchQuery = FilterUtils.enrichLikeStatements(StringUtils.strip(query));
         return taskRepository.searchForTasks(databaseSearchQuery, userContext.getCurrentUserId(), limit)
                 .stream().map(taskMapper::toDTO).toList();
     }

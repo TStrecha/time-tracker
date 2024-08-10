@@ -9,7 +9,7 @@ class TimeTrackerApplicationIT extends IntegrationTest {
 
     @Test
     @SuppressWarnings("java:S2699")
-    void contextLoads() {
+    void should_LoadContext() {
     }
 
 }

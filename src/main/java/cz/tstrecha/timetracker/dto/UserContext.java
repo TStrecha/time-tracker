@@ -21,7 +21,12 @@ public class UserContext implements Principal {
 
     private Long id;
     private String email;
+
+    private String firstName;
+    private String lastName;
+    private String companyName;
     private String fullName;
+
     private UserRole role;
     private ContextUserDTO loggedAs;
 

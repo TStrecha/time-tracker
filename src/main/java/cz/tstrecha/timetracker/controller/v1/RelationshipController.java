@@ -36,6 +36,18 @@ public class RelationshipController {
 
     private final RelationshipService relationshipService;
 
+    @GetMapping("/context")
+    @CustomPermissionCheck
+    public ResponseEntity<List<ContextUserDTO>> getAvailableContexts(@InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(relationshipService.getActiveContexts(userContext), HttpStatus.OK);
+    }
+
+    @GetMapping
+    @CustomPermissionCheck
+    public ResponseEntity<List<RelationshipDTO>> getAllRelationships(@InjectUserContext UserContext userContext){
+        return new ResponseEntity<>(relationshipService.getAllRelationships(userContext), HttpStatus.OK);
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ACCOUNT_OWNER')")
     public ResponseEntity<RelationshipDTO> createRelationship(@RequestBody RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO,
@@ -49,16 +61,4 @@ public class RelationshipController {
                                                             @InjectUserContext UserContext userContext){
         return new ResponseEntity<>(relationshipService.updateRelationship(relationshipCreateUpdateRequestDTO, userContext), HttpStatus.OK);
     }
-    @GetMapping("/context")
-    @CustomPermissionCheck
-    public ResponseEntity<List<ContextUserDTO>> getAvailableContexts(@InjectUserContext UserContext userContext){
-        return new ResponseEntity<>(relationshipService.getActiveContexts(userContext), HttpStatus.OK);
-    }
-
-    @PutMapping("/context")
-    @CustomPermissionCheck
-    public ResponseEntity<LoginResponseDTO> changeContext(@RequestParam Long id, @InjectUserContext UserContext userContext){
-        return new ResponseEntity<>(relationshipService.changeContext(id, userContext), HttpStatus.OK);
-    }
-
 }

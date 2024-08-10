@@ -11,6 +11,7 @@ import cz.tstrecha.timetracker.repository.UserRepository;
 import cz.tstrecha.timetracker.repository.entity.UserEntity;
 import cz.tstrecha.timetracker.service.AuthenticationService;
 import cz.tstrecha.timetracker.service.ContextService;
+import cz.tstrecha.timetracker.service.UserRetrievalService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -34,6 +35,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private static final String USER_ID_CLAIM_KEY = "userId";
     private static final String AUTHORIZED_AS_USER_CLAIM_KEY = "authorizedAsUserId";
 
+
+    private final UserRetrievalService userRetrievalService;
 
     private final ContextService contextService;
 
@@ -116,6 +119,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var newContext = contextService.getContextFromUser(user, authorizedAsUserId);
 
         return new LoginResponseDTO(true, generateToken(user, newContext), token);
+    }
+
+    @Override
+    @Transactional
+    public LoginResponseDTO changeContext(Long id, UserContext userContext) {
+        var user = userRetrievalService.getLoggedUserFromContext(userContext);
+        var newContext = contextService.getContextFromUser(user, id);
+
+        var token = generateToken(user, newContext);
+        var refreshToken = generateRefreshToken(user.getId(), newContext.getId());
+
+        return new LoginResponseDTO(true, token, refreshToken);
     }
 
     @Override

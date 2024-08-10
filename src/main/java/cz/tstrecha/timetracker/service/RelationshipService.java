@@ -1,7 +1,6 @@
 package cz.tstrecha.timetracker.service;
 
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
-import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
@@ -17,6 +16,13 @@ public interface RelationshipService {
     List<ContextUserDTO> getActiveContexts(UserContext userContext);
 
     /**
+     *
+     * @param userContext
+     * @return
+     */
+    List<RelationshipDTO> getAllRelationships(UserContext userContext);
+
+    /**
      * @param relationshipCreateUpdateRequestDTO
      * @param userContext
      * @return
@@ -29,11 +35,4 @@ public interface RelationshipService {
      * @return
      */
     RelationshipDTO updateRelationship(RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO, UserContext userContext);
-
-    /**
-     * @param id
-     * @param userContext
-     * @return
-     */
-    LoginResponseDTO changeContext(Long id, UserContext userContext);
 }
