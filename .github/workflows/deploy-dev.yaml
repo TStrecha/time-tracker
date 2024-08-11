@@ -1,0 +1,14 @@
+name: Deploy application (dev)
+
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  container-job:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+      - name: Restart service
+        run: sudo systemctl restart ttbe
