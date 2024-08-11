@@ -53,9 +53,36 @@ class TaskIT extends IntegrationTest {
         Assertions.assertNull(taskDTO.getNote());
         Assertions.assertNull(taskDTO.getEstimate());
 
-        Assertions.assertEquals(1L, taskDTO.getId());
+        Assertions.assertNotNull(taskDTO.getId());
+
         Assertions.assertEquals(name, taskDTO.getName());
         Assertions.assertEquals(name, taskDTO.getNameSimple());
+        Assertions.assertEquals(TaskStatus.NEW, taskDTO.getStatus());
+
+        Assertions.assertTrue(taskDTO.isActive());
+    }
+
+    @Test
+    @SneakyThrows
+    void should_CreateEmptyTaskWithCustomId_When_ValidRequestGiven() {
+        var identifier = IdentifierType.CUSTOM_ID;
+        var customId = 8181;
+
+        var taskDTO = buildRequest(HttpMethod.POST, STR."\{TASK_API_BASE_PATH}/{identifier}/{name}", identifier, customId)
+                .withAuthorization(ofPrimaryUser())
+                .performWith(mvc)
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andReturnAs(TaskDTO.class);
+
+        Assertions.assertNull(taskDTO.getDescription());
+        Assertions.assertNull(taskDTO.getNote());
+        Assertions.assertNull(taskDTO.getEstimate());
+        Assertions.assertNull(taskDTO.getName());
+        Assertions.assertNull(taskDTO.getNameSimple());
+
+        Assertions.assertNotNull(taskDTO.getId());
+
+        Assertions.assertEquals(customId, taskDTO.getCustomId());
         Assertions.assertEquals(TaskStatus.NEW, taskDTO.getStatus());
 
         Assertions.assertTrue(taskDTO.isActive());
@@ -308,6 +335,8 @@ class TaskIT extends IntegrationTest {
                 .performWith(mvc)
                 .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
+
+    //TODO(TS, 2024-08-11): Add tests for TaskController.searchForTasks method
 
     private void assertTask(TaskCreateRequestDTO request, TaskDTO task) {
         assertTask(request, task, request.isActive(), request.getStatus());

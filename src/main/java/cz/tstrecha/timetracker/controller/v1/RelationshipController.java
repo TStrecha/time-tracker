@@ -4,7 +4,6 @@ import cz.tstrecha.timetracker.annotation.CustomPermissionCheck;
 import cz.tstrecha.timetracker.annotation.InjectUserContext;
 import cz.tstrecha.timetracker.constant.Constants;
 import cz.tstrecha.timetracker.dto.ContextUserDTO;
-import cz.tstrecha.timetracker.dto.LoginResponseDTO;
 import cz.tstrecha.timetracker.dto.RelationshipCreateUpdateRequestDTO;
 import cz.tstrecha.timetracker.dto.RelationshipDTO;
 import cz.tstrecha.timetracker.dto.UserContext;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -57,8 +55,8 @@ public class RelationshipController {
 
     @PutMapping
     @PreAuthorize("hasPermission(#relationshipCreateUpdateRequestDTO.id, 'relationship', 'relationship.update') && hasRole('ACCOUNT_OWNER')")
-    public ResponseEntity<RelationshipDTO> editRelationship(@RequestBody RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO,
-                                                            @InjectUserContext UserContext userContext){
+    public ResponseEntity<RelationshipDTO> updateRelationship(@RequestBody RelationshipCreateUpdateRequestDTO relationshipCreateUpdateRequestDTO,
+                                                              @InjectUserContext UserContext userContext){
         return new ResponseEntity<>(relationshipService.updateRelationship(relationshipCreateUpdateRequestDTO, userContext), HttpStatus.OK);
     }
 }
