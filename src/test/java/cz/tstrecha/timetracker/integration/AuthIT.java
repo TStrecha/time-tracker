@@ -254,6 +254,8 @@ class AuthIT extends IntegrationTest {
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
+    //TODO(TS, 2024-08-11): Add tests for AuthController.changeContext method
+
     private UserRegistrationRequestDTO createUserRegistrationRequest(AccountType accountType){
         var request = new UserRegistrationRequestDTO();
         request.setEmail(USER_EMAIL);
